@@ -34,6 +34,7 @@ verbose = false
 workingFolderCurrent = false
 
 [markup.asciidocExt.attributes]
+source-highlighter = 'highlight.js'
 
 [security.exec]
 allow = ['^asciidoctor$']

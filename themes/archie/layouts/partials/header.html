@@ -115,4 +115,13 @@
 	<script src="{{ absURL . }}"></script>
 	{{- end }}
 	{{- end }}
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/ocaml.min.js"></script>
+        <script src="/terraform.js"></script>
+        <script>
+          hljs.registerLanguage('terraform', window.hljsDefineTerraform);
+          hljs.highlightAll();
+        </script>
 </head>
