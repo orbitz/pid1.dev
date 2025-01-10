@@ -1,0 +1,128 @@
+---
+title: "IaC and Abstraction"
+date: 2025-01-17T00:00:00+01:00
+draft: false
+---
+
+NOTE: I will refer to OpenTofu but unless otherwise specified, everything
+applies to Terrraform as well.
+
+OpenTofu recently released https://opentofu.org/blog/opentofu-1-9-0/[1.9.0] with
+provider `for_each` support, also known as
+https://github.com/opentofu/opentofu/issues/300[dynamic provider configuration].
+This is actually a pretty old request.  The
+https://github.com/hashicorp/terraform/issues/19932[original ticket] is from
+2019, before even version `1.0.0` of Terraform was released.
+
+A provider is a library that enables Tofu to interact with services.  They cover
+everything from the major cloud providers to services like PagerDuty.  To use a
+provider, you instantiate it with a configuration.  The issue is they cannot be
+referenced through variables, which means the Tofu code can become very
+repetitive.  Dynamic provider configuration addresses this limitation.
+
+A motivational use case for this functionality is wanting to create the same
+resources across multiple cloud regions.  An instance of the AWS provider is
+tied to a specific region, so you have to copy and paste the code or move it to
+a module and copy and paste referencing the module multiple times using provider
+aliases.
+
+With OpenTofu 1.9.0 (as of this writing, dynamic providers is not in Terraform),
+now you can use `for_each` in a provider to configure multiple providers and
+then access them via an alias.
+
+
+[source,terraform]
+----
+provider "aws" {
+  alias    = "by_region"
+  region   = each.value
+  for_each = var.regions
+}
+----
+
+And then we access it via the `by_region` alias:
+
+[source,terraform]
+----
+module "deploy" {
+  source    = "./deploy"
+  providers = {
+    aws = aws.by_region[each.key]
+  }
+}
+----
+
+
+Despite the original ticket getting a lot of support from the community through
+the years, there are the naysayers:
+
+"I think that relying on a feature like this could possibly be a sign of a bad
+design."
+-- Someone on the internet
+
+And those who have found some line of demarcation where they switch from HCL to
+something else.
+
+"... the point I needed to put a loop around a provider is well past the point I
+would say "stop, we need a real programming language""
+-- Someone else on the internet
+
+It took OpenTofu being created for the feature to finally be implemented.
+
+While I think some of the negative response to this ticket is part of the
+HashiCorp feud, in my experience, features like these are a kind of barometer
+for how one views writing Tofu code.  Does "infrastructure as code" mean that
+managing my infrastructure is like writing code and you want to be able to build
+abstractions?  Or is "infrastructure as code" really more like writing a
+configuration file and straightforward is better?
+
+Tofu doesn't have many tools of abstraction.  The closest is "modules" and the
+https://opentofu.org/docs/language/modules/develop/composition/[OpenTofu docs]
+even recommend against relying too much on modules, instead choosing a flat tree
+and manually connecting outputs to inputs.
+
+"... in most cases we strongly recommend keeping the module tree flat, with only one
+level of child modules ..."
+-- OpenTofu module docs
+
+And, yet, Tofu uses
+https://opentofu.org/docs/language/syntax/configuration/[HCL], a
+https://en.wikipedia.org/wiki/Domain-specific_language[DSL], for defining
+infrastructure rather than a pure configuration language, such as YAML.  HCL
+provides some niceties beyond a standard configuration language, such as
+defining expressions rather than literals, having functions, loops, and
+conditionals.  Clearly there is some agreement that Tofu should utilize a
+language more powerful YAML.
+
+As a user commented in the dynamic providers ticket said:
+
+"What's the point of making a DSL when you can't loop properly? Might as well
+have stuck with plain YAML."
+-- Terraform User
+
+While I can sympathize with the reluctance to make Tofu too expressive, I
+disagree with it.  How expressive is too expressive is arbitrary and I don't
+think we should design Tofu around an arbitrary idea of complexity.  We should
+allow as much abstraction as we can jam into HCL as the semantics of the
+language will allow us.
+
+What makes Tofu special is that it has complete knowledge of the code.  With
+complete knowledge, you can do a lot to manage concerns around complexity.  Tofu
+is declarative: we write out what the infrastructure should look like and it is
+responsible for making it so.  With that, we could interpret the HCL of a root
+module and ask it questions: what resources are defined in this module or which
+line of code creates a specific resource?  With the state file, we can connect
+that information to the physical world, drawing the line between a resource in
+the cloud and the line of code that originated it.  We could even perform
+transformations on code to see it in different forms, for example unrolling
+loops or flattening modules.  This is a strength that CDKs and Pulumi lack, as
+they depend in the language runtime to construct an intermediate representation
+of the infrastructure.
+
+If we want to treat infrastructure as code, then we should be willing to accept
+that there is no ceiling on the complexity of infrastructure a user may want to
+express.  We should give them the abstractions they need to safely implement
+that complexity.  But we should not be dismissive of those that are concerned
+about the complexity, instead we should have the ability to inspect, simplify,
+and understand the code.  In the IaC space, Tofu is uniquely positioned to be
+able to provide that developer experience.

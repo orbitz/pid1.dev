@@ -9,7 +9,7 @@
 html {
   color: #232333;
   font-family: 'Roboto Mono', monospace;
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.6em;
 }
 body{
@@ -374,16 +374,16 @@ table {
   border-collapse: collapse;
 }
 
-table th{
-  padding: 6px 13px;
-  border: 1px solid #dfe2e5;
-  font-size: large;
-}
+/* table th{ */
+/*   padding: 6px 13px; */
+/*   border: 1px solid #dfe2e5; */
+/*   font-size: large; */
+/* } */
 
-table td{
-  padding: 6px 13px;
-  border: 1px solid #dfe2e5;
-}
+/* table td{ */
+/*   padding: 6px 13px; */
+/*   border: 1px solid #dfe2e5; */
+/* } */
 
 .feather {
   width: 24px;
@@ -394,3 +394,77 @@ table td{
   stroke-linejoin: round;
   fill: none;
 }
+
+table {
+    background: #fff;
+    margin-bottom: 1.25em;
+    border: 1px solid #dedede;
+    word-wrap: normal;
+}
+
+td {
+    display: table-cell;
+    vertical-align: inherit;
+    unicode-bidi: isolate;
+}
+
+tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    unicode-bidi: isolate;
+    border-color: inherit;
+}
+
+.admonitionblock .title {
+    margin-bottom: unset;
+}
+
+.admonitionblock>table td.content {
+    padding-left: 1.125em;
+    padding-right: 1.25em;
+    border-left: 1px solid #dddddf;
+    color: rgba(0,0,0,.6);
+    word-wrap: anywhere;
+}
+
+.admonitionblock>table {
+    border-collapse:separate;
+    border:0;
+    background:none;
+    width:100%
+}
+
+.admonitionblock>table td.icon {
+    text-align:center;
+    width:80px
+}
+
+.admonitionblock>table td.icon img {
+    max-width:none
+}
+
+.admonitionblock>table td.icon .title {
+    font-weight:bold;
+    font-family:"Open Sans","DejaVu Sans",sans-serif;
+    text-transform:uppercase
+}
+
+.admonitionblock>table td.content {
+    padding-left:1.125em;
+    padding-right:1.25em;
+    border-left:1px solid #dddddf;
+    color:rgba(0,0,0,.6);
+    word-wrap:anywhere
+}
+
+.admonitionblock>table td.content>:last-child>:last-child {
+    margin-bottom:0
+}
+
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+
+table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
+table.linenotable td.code{padding-left:.75em}
+table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+
