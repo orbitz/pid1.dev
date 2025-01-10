@@ -1,0 +1,39 @@
+theme = "archie"
+baseURL = 'https://pid1.dev/'
+languageCode = 'en-us'
+title = 'pid1'
+
+[module.hugoVersion]
+min = "0.113.0"
+
+[[menu.main]]
+identifier = "post"
+name = "Posts"
+url = "/"
+weight = 1
+
+[[menu.main]]
+identifier = "about"
+name = "About"
+url = "/about/"
+weight = 3
+
+[taxonomies]
+tags = "tags"
+
+[markup.asciidocExt]
+backend = 'html5'
+extensions = []
+failureLevel = 'fatal'
+noHeaderOrFooter = true
+preserveTOC = false
+safeMode = 'unsafe'
+sectionNumbers = false
+trace = false
+verbose = false
+workingFolderCurrent = false
+
+[markup.asciidocExt.attributes]
+
+[security.exec]
+allow = ['^asciidoctor$']

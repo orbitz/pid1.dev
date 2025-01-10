@@ -1,0 +1,13 @@
+---
+title: "About"
+date: 2025-01-10T12:20:03+01:00
+---
+
+Hi, I'm Malcolm Matalka.  I'm generally a software developer, which I've been
+doing for a long time.  I am also co-founder of
+https://www.terrateam.io[Terrateam] which is a an open-source
+Infrastructure-as-Code orchestrator.  I'm into software development as a field
+of engineering as well as a creative outlet.  I write applications for myself
+(which I call DIY Software) including a podcast player and a food tracking
+application.  I prefer to write software in Ocaml and I'm known for writing a
+lot of my own frameworks and tools.
