@@ -37,3 +37,7 @@ workingFolderCurrent = false
 
 [security.exec]
 allow = ['^asciidoctor$']
+
+[outputFormats.RSS]
+mediatype = "application/rss"
+baseName = "feed"
