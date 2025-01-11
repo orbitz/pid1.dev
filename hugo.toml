@@ -16,6 +16,12 @@ weight = 1
 identifier = "about"
 name = "About"
 url = "/about/"
+weight = 2
+
+[[menu.main]]
+identifier = "rss"
+name = "RSS"
+url = "/posts/feed.xml"
 weight = 3
 
 [taxonomies]
