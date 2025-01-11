@@ -9,7 +9,7 @@ min = "0.113.0"
 [[menu.main]]
 identifier = "post"
 name = "Posts"
-url = "/"
+url = "/posts/"
 weight = 1
 
 [[menu.main]]
