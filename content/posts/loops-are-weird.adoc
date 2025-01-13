@@ -1,0 +1,177 @@
+---
+title: "Loops In Tofu Are Weird"
+date: 2025-01-24T00:00:00+01:00
+draft: false
+---
+
+NOTE: I will refer to OpenTofu in this post, however everything I say applies
+equally to Terraform.
+
+Tofu uses https://opentofu.org/docs/language/syntax/configuration/[HCL] to
+define infrastructure.  It's a fairly simple.  Closer to a configuration
+language than a programming language.  Choosing a
+https://en.wikipedia.org/wiki/Domain-specific_language[DSL] for a product can be
+hit-or-miss, but in this case I'm fairly pro-DSL.  Given the goals of Terraform
+(the project OpenTofu is a forked from), using something like YAML would quickly
+become difficult to manage infrastructure at scale, and a full-fledged
+programming language brings a lot of complexity.  While I understand why users
+of CDKs and Pulumi like it, I think HCL is accessible to more people.  I
+wouldn't say that HCL is a great language but it gets the job done and is mostly
+straightforward.  Being a simple language meant that we could implement a
+https://github.com/terrateamio/terrateam/blob/main/code/src/hcl_ast_cli/hcl_ast_cli.ml[parser]
+in Ocaml for Terrateam, which let us implement some neat features around code
+indexing.
+
+HCL does have some oddities, though.  Looping, in particular, I think is one of
+the strange ones.  There are actually a few different types of loops in HCL:
+`for` expressions and `for_each`.  There is also `count`, but that can be thought
+of as a special case of `for_each`.
+
+NOTE: These examples have been shamelessly stolen from the
+https://opentofu.org/[OpenTofu] documentation.
+
+`for` expressions are not so strange, they are like list comprehensions in other
+languages:
+
+[source,terraform]
+----
+[for s in var.list : upper(s)]
+----
+
+And there is a similar syntax for constructing maps:
+
+[source,terraform]
+----
+{for s in var.list : s => upper(s)}
+----
+
+These constructs are limited to making containers, though.  Lists, sets, and
+maps.  Resources, modules, and providers are not like this.  They cannot be put
+in a container.  Instead, there is specialized syntax for looping over those:
+`for_each` and `count`.
+
+These are implemented as "meta-arguments".  They are special.  In HCL we have
+blocks, like `resource`.  A block can have attributes in the form of `key =
+value`.
+
+[source,terraform]
+----
+resource "aws_instance" "server" {
+  ami           = "ami-a1b2c3d4"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "Server"
+  }
+}
+----
+
+The attributes `for_each` and `count` are reserved and cause the block to be
+duplicated.  To create four of the above resource:
+
+[source,terraform]
+----
+resource "aws_instance" "server" {
+  count = 4 # create four similar EC2 instances
+
+  ami           = "ami-a1b2c3d4"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "Server ${count.index}"
+  }
+}
+----
+
+The `for_each` meta-argument is similar, but it operates over a map or set:
+
+[source,terraform]
+----
+resource "azurerm_resource_group" "rg" {
+  for_each = {
+    a_group = "eastus"
+    another_group = "westus2"
+  }
+  name     = each.key
+  location = each.value
+}
+----
+
+These meta-arguments are, in my opinion, a weird way to implement looping.
+Imagine a programming language where rather than having a loop construct, it was
+a parameter to every function.  To print "Hello world" four times in Python we
+had to do the following:
+
+[source,python]
+----
+print("Hello world", count=4)
+----
+
+Being weird is not disqualifying, though.  We are pretty capable of dealing with
+oddities and making it work and that's what we do with loops in Tofu.  It's way
+too late to go back and redesign loops, even if we wanted to, anyways.
+
+The thing with language design: it's all trade-offs.  Given a goal of a
+language, it's going to have some, seemingly, odd choices in it, but hopefully
+they serve a purpose.
+
+Some of the trade-offs in making looping a meta-argument:
+
+. It changes the meaning of the name of the block.  Normally one accesses a
+block with `$type.$name`, for example `azurerm_resource_group.rg`.  But with the
+`for_each` or `count` meta-arguments, the blocks become map of the index to the
+value, i.e. `azurerm_resource_group.rg["a_group"]`.
+. They are ambiguous.  What does it mean for a block to have a `count` and
+`for_each` meta-argument?  The documentation makes it clear that this is an
+error but perhaps a construct that makes this ambiguity impossible would be better.
+. Blocks that go together cannot be grouped together.  Each block must specify
+its own `for_each`.
+. It creates keywords.  Maybe not a huge deal but reserved
+words are always limiting and avoiding them, I think, is a good design goal.
+. Each block type needs its own implementation of `for_each`.
+
+I think the last point is particularly interesting.  Only
+link:/posts/iac-and-abstraction/[recently] did the `provider` block get a
+`for_each` implementation.  This was a long lived ticket, dating back to 2019,
+and has sparked some debate in the community.  But the only reason it can spark
+debate is because looping is a specialized feature.  If looping had been
+implemented as an orthogonal construct of the language, there wouldn't be any
+discussion.
+
+Not only does it open up for debate if a particular block "needs" to be able to
+loop but I think there is a possible risk of making future language features
+confusing.  I don't have an actual example, but consider the addition of a block
+to Tofu that modifies an existing block.  Would this new block need a `for_each`
+as well?  If such a scenario arises, I trust the Tofu team to be thoughtful
+about the implementation and implications.
+
+Looping was implemented earlier than the involvement of any of the developers I
+talked to so I don't know how the design discussions went nor what the design
+goals were.  Perhaps other looping implementations were considered.  I can
+certainly imagine the original designers thinking looping would be used in
+narrowly defined circumstances.  But like all useful features, their usage
+spreads.  Loops as a hack for optionally building resources was a trick the
+community realized was possible.
+
+From my time as an unsuccessful amateur Programming Language Theorist, I would
+have liked to see loops implemented as an orthogonal language construct which
+takes blocks as inputs rather than with meta-arguments.  But, as mentioned, a
+lot of language design is trade-offs.  A strength of the current implementation
+is that it's straightforward and lightweight for a lot of common use cases.  If
+you need to create a bunch of resources that are related in a loop, to make them
+more manageable, you can put them in a module and loop over the module.
+
+I think it will be interesting to see how Tofu evolves over the upcoming years.
+There is a tension between how many "programming" abstractions Tofu should get
+and how much we should treat it like a configuration language.  I think that
+Tofu will get more and more programming abstractions.  Languages just evolve to
+get more features.  There are users that have need for better abstractions
+because they truly are treating their infrastructure as code and want to build
+infrastructure at scale.
+
+=== Thank you
+
+Thank you to the folks at OpenTofu for answering the questions I had about the
+history of looping.  Special thanks to
+https://github.com/apparentlymart[apparentlymart] for his vast knowledge of
+Terraform and Tofu.
