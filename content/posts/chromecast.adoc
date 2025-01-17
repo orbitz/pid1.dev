@@ -1,0 +1,67 @@
+---
+title: "The Enshittification of the Chromecast"
+date: 2025-01-31T00:00:00+01:00
+draft: false
+---
+
+My favorite Google product for a long time has been the Chromecast.  It solved a
+problem, it was easy to use, and it just worked.  It also turned watching
+YouTube into kind of a social experience, where everyone could connect and add
+videos to the queue.
+
+My favorite thing about it is you just had to be on the network to cast.  I
+didn't have to make an account and add myself to a friend's house group or
+something.  You just connect to whatever Chromecast-capable device is on the
+network and start casting.
+
+The original Chromecast was a little dongle you plugged into your TV.  It didn't
+require a Google account.  It didn't do anything other than give you a wifi
+service to display things on the TV.  The Google Alexa's could also speak
+Chromecast and you could play music to it.
+
+In recent months the speaker has been barely working for me, though.  It will
+randomly stop playing.  No error or anything.  Also, if you leave the network
+and comeback sometimes your phone randomly takes control of it and starts
+playing again, even if someone else is in the middle of listening to something.
+
+The Chromecast support in YouTube has become so bad it causes me stress to
+use it.  It used to be that when you tapped on a video to play the video, it
+would ask you if you wanted to add it to the queue or play it now.  Now what
+happens is entirely unclear.  What I think I've figured out is that if the video
+already happens to be in the queue, it will jump to that point in the queue.
+Otherwise it might ask you if you want to add it to the queue or play now.  But
+because you don't necessarily know what's in the queue, you don't know if
+tapping on a video is a good idea or not.  You might ruin your group experience
+by jumping around the queue.  Your best bet now is to always choose the three
+dots by a video and explicitly choose the action.  Who thought this change was a
+good idea?
+
+The true enshittification probably started with the Google TV, which was a
+Chromecast device which came with a remote.  Why do I need a remote?  The point
+of the Chromecast is to be this invisible thing that is just always there and
+working.
+
+The next was when Google
+https://arstechnica.com/gadgets/2024/08/google-kills-chromecast-replaces-it-with-apple-tv-and-roku-ultra-competitor/[announced]
+they were killing the dongle and replacing it with a box.  The dongle just
+plugged into your TV and disappeared behind the TV, now you need to find a
+place to put this stupid device.
+
+Google has also been increasing the account requirements on setting up a
+Chromecast, or Google TV, or Chromecast TV, whatever they are calling it.  The
+last device I set up I needed a Google account and it wanted all sorts of
+information out of me so it could make recommendations.  Hey, Chromecast, this
+is a one-way relationship where I tell you what to play on my TV and you
+play it.
+
+I don't know what's actually going on in Google HQ but I imagine some product
+person saw an issue where Chromecast wasn't shoving Google in your face enough
+and decided it was a lost opportunity that they could fix.  But by fixing it
+you're ruining the value of the product (at least, in my opinion).
+
+My current company is bootstrapped and we like it that way but if I had a
+buttload of funding, I would love to make a hardware company that speaks
+Chromecast, is as tiny as possible, and just works.  If you want to create an
+account because maybe you want to restrict who has access to it (using in a
+public kiosk or something) fine, you can do that if you want.  Maybe some brave
+sole will take over the Chromecast world as Google slowly turns it to trash.
