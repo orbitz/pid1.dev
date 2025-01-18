@@ -1,0 +1,298 @@
+---
+title: "Terralith: The Terraform and OpenTofu Boogieman"
+date: 2025-02-07T00:00:00+01:00
+draft: false
+---
+
+https://github.com/terrateamio/terrateam[Terrateam] has a very expressive
+configuration file.  We need it because, as any Terraform or Tofu user knows,
+there is no standard on how you should design your repository.  The Eternal
+September question of https://old.reddit.com/r/terraform/[r/terraform] is asking
+how to structure a repository for multiple environments.  It comes up so much
+that we even https://terrateam.io/blog/terraform-code-organization/[wrote a blog
+post] about it.
+
+Terraform and Tofu users, in my experience, are especially concerned with how to
+structure a repository.  I think this is because Tofu is so low-level.  It
+concerns itself with how to manage the specific resources within your
+infrastructure but not really your infrastructure as a whole.  Tofu manages a
+state file, which is how it connects the code you write to the actual
+infrastructure in the cloud.  Each directory that has a state file associated
+with it is called a _root module_.  You run the Tofu program in a root module
+and it evaluates everything.
+
+NOTE: I will refer to OpenTofu but unless otherwise specified, everything
+applies to Terrraform as well.
+
+Putting all of your infrastructure in a root module is called a _Terralith_ and
+is generally frowned upon.  Masterpoint, a great IaC consulting company,
+probably has the best
+https://masterpoint.io/updates/terralith-monolithic-terraform-architecture/[blog
+post] on the Terralith.  As they put it:
+
+"A single massive root module that contains all the infrastructure definitions
+is like trying to cram an entire city into one skyscraper!"
+-- Masterpoint
+
+== The Argument Against the Terralith
+
+Recommending breaking your infrastructure up across multiple root directories
+comes down to a few things:
+
+. **Credentials management** - If you have a Terralith with multiple environments to
+manage, those environments need their individual configuration accessible at the
+time of run.  Generally, each environment will have their own credentials.  In a
+Terralith, you must create a provider for each one of those configurations.
+. **Blast radius** - The more resources in a root module, the more resources can
+be impacted by a change.  Many people believe that it's best to limit the
+possible damage that could be done by a mistake by keeping root modules small.
++
+"So what do we mean by blast radius? We’re talking about minimising the amount
+of damage you can do with a mistake, error or bug in your IaC."
+-- https://samcogan.com/reducing-your-blast-radius/[Sam Cogan]
+. **Speed** - By default, Tofu compares all resources in the state file to the
+cloud provider.  The more resources in a state file, the longer that takes.
+. **State locking** - It's best practice to enable state locking, which means
+that only one operation can be performed at a time in a root module.  Combined
+with speed of those operations, that means that each user has to wait until all
+operations before them have completed in order to see the result of their
+operation, really reducing their iteration speed.
+
+The recommendation is to split up your infrastructure into many root modules.
+Networking could be its own root modules, database another, applications
+another.  In the case that one root module needs access to the outputs of
+another root module you can use the
+https://opentofu.org/docs/v1.7/language/state/remote-state-data/[terraform_remote_state],
+to gain access to the other root module's state file.  These root modules should
+then be orchestrated.
+
+All of this works.  It's considered best practice.  Terrateam has excellent
+support for
+https://docs.terrateam.io/advanced-workflows/multiple-environments/#using-directories-for-multiple-environments[defining]
+and https://docs.terrateam.io/advanced-workflows/layered-runs/[orchestrating]
+all of this.  It's what our blog post recommends people do.
+
+== Trade-offs
+
+Technical decisions are often about weighing the trade-offs between the options
+rather than one being outright better.  Splitting infrastructure across
+resources does address the stated problems with a Terralith.  It also introduces
+its own problems.
+
+In my view, there are two big trade-offs when it comes to splitting
+infrastructure across multiple root modules:
+
+. **Blast radius** - While it's true that reducing the number of resources in a
+root module does limit the direct impact of a change or a mistake to those
+resources, the indirect damage can be just as bad.  What's worse is that there
+is no way to make the downstream impacts visible.  Consider a situation where we
+have a database root module that multiple application root modules depend on via
+the `terraform_remote_state` data source.  If we make a change to the database,
+the plan will only show how the database changes.  If those changes conflict
+with how the application layers use the database change, we won't see that in
+the plan.  Compare that with how a change would look in a Terralith.  The plan
+for a change to the database would show that the application resources are
+impacted.
++
+I think Robert Hafner articulates it better than I:
++
+> For me "blast radius" isn't much of a concern when it comes to root
+> modules. Most changes are small and only affect a handful of resources (if
+> that isn't the case for your team then break things up into smaller pieces and
+> more pull requests). If you have a dependency between components you're going
+> to have a problem when a component fails regardless of what root module it
+> lives in.
+-- Robert Hafner, Author of https://www.manning.com/books/terraform-in-depth[Terraform in Depth]
++
+I have also struggled to really understand the blast radius concern because a
+standard Tofu workflow involves performing a `plan` operation, reviewing it,
+then performing the `apply`.  One can see what Tofu will do before it does it.
+How can blast radius be such a concern, then?  In asking around, I believe early
+users of Terraform had some bad experiences when Terraform and providers were
+less stable and plans less reliable.  I've heard some form of this from multiple
+people but never a concrete example of this happening recently.  In my opinion,
+this is not a good argument for multiple root modules.  If providers are not
+executing the plan faithfully, that is a bug, and bugs should to be fixed.  I do
+sympathize with the fear.  Nobody wants to have downtime due to a bug but how
+long do we have base our best practices on these stories that are more like
+urban legends at this point?
+. **Refactoring** - It's easy to come into an existing repository and see how it
+should have been laid out but starting from scratch is different.  Most people
+will probably begin with a Terralith which they will then have to refactor into
+multiple root modules as the infrastructure grows.  And then those root modules
+will need to be refactored as needs change.
++
+While it is possible to refactor code and move resources into different state
+files, it does require some state surgery.  That work cannot be done in a normal
+workflow that can be reviewed, it requires using the `tofu state` commands.
+There is the
+https://opentofu.org/docs/language/modules/develop/refactoring/#moved-block-syntax[moved]
+block, but that is for refactoring inside a root module, not moving resources
+across root modules.
++
+Code is always going to need to be refactored.  Refactoring within a root module
+is straight forward: just move the code around and used `moved` blocks.  But the
+multi-root module approach adds an extra layer of complexity and room for
+mistake.  It takes time, it requires users to get direct access to the state, it
+requires blocking operations during the surgery.  It's time spent, with risk,
+that is necessary only because the lack of sufficient tooling is forcing us.
+
+What I find especially hard to swallow is that the reasoning behind splitting
+infrastructure across multiple root modules is backwards.  When we contemplate
+how to design software, we think about it in the abstract.  We think about how
+we can express solutions to problems in ways that humans can understand and then
+we build tooling to match that.  The famous paper by D.L. Parnas
+https://wstomv.win.tue.nl/edu/2ip30/references/criteria_for_modularization.pdf[On
+the Criteria To Be Used in Decomposing Systems into Modules], for example, is
+focused on how to make the programmer effective, not the limitations of the
+tools.
+
+But when we talk about how to design our infrastructure code, we start with the
+limitations of our tooling and try to derive what we can do within those
+constraints and then call that best practice.  Imagine if the best practice in
+Python was to split code into modules not because that is what helps users write
+better programs but because Python simply cannot handle large modules.  I think
+that would be viewed as a problem that should be solved.  Compiler and run-time
+optimizations are an interesting parallel here.  It's common in programming
+languages for communities to converge on a certain way to express a solution and
+for the compiler and run-time team to introduce optimizations to support that
+solution better.
+
+That is not to say that a Terralith is the right solution but rather that we
+should motivate splitting infrastructure across root modules not by how to work
+around the limitations of Terraform and Tofu but by how it helps the user.  In
+this way, I disagree with the Masterpoint's analogy that a Terralith is like
+cramming an entire city into a sky scrapper.  Whether or not your infrastructure
+is represented by multiple root modules or a Terralith, it's the same
+infrastructure with the same inter-dependencies.  Expressing that infrastructure
+in a single root module does not make that more complex.  Using
+https://opentofu.org/docs/language/modules/[child modules], we can break a
+Terralith into the same logical units that we would if we used multiple root
+modules.
+
+== But What If We Could
+
+I think it's worth clearing one's mind of the arguments for or against a
+Terralith and genuinely consider the question: what would have to be true for a
+Terralith to be the best practice?
+
+In my opinion:
+
+. We must be able to see all resources that are impacted by a change in a
+single plan.
+. We must be able to target logical units of our infrastructure and the run-time
+of an operation must reflect that.
+. We must be able to run plans concurrently.
+. We must be able to run applies that do not overlap in their change set
+concurrently.
+
+I think Terraform and Tofu do not have the features to make this happen but
+they're pretty close. They do expose the primitives that a wrapper can be built
+to give a better experience.
+
+I wrote a proof of concept called
+https://github.com/terrateamio/terralith[Terralith] to play with this.  To
+migrate to it:
+
+. Move the provider definitions from your existing root modules and into a
+single root module.
+. Refactor the provider configurations such that the credentials for each of
+them can be passed in together.  For example instead of `AWS_ACCESS_KEY_ID`
+maybe `AWS_ACCESS_KEY_ID_$stack`.
+. Instantiate your previous root modules in a `module` block, passing in the
+required providers as provider aliases.
+. Merge all the state files together (this requires some state surgery but
+certainly something the Terralith tool could provide).
+
+Starting from scratch is simpler, of course, because no state surgery.
+
+The tool, `terralith`, does not do anything sophisticated.  It calls each module
+in the root module directory a _stack_ and lets you operate against them with
+the `--stack` option.  It translates a `--stack` to `-target=module.$stack` to
+limit operations to a particular stack.
+
+"You can use the `-target` or the `-exclude` option to trigger resource
+targeting, focusing OpenTofu's attention on only a subset of resources. Using
+the `-target` option will focus OpenTofu's attention only on resources and
+module that are directly targeted, or are dependencies of the target."
+-- https://opentofu.org/docs/cli/commands/plan/#resource-targeting[OpenTofu]
+
+What is nice about this approach is that even if one runs `terralith plan
+--stack=database`, OpenTofu will automatically plan resources in stacks that
+depend on `database` if they are dependencies.  You can see the full impact of a
+change in a single plan.  It also means that a `plan` will only take as long as
+it takes to compare those specific resources which have changed in the code.
+
+The `-target` option has a bad rap.  Tofu even outputs a warning when used.
+Most of that, in my opinion, comes from people using `-target` when they are in
+a pickle.  Most usage of it is unprincipled.  In `terralith`, usage of `-target`
+is very limited, it only applies it to modules which can be treated as stacks.
+
+The tool doesn't solve all the issues in the Masterpoint blog post.  It doesn't
+even hit the requirements listed above for making a Terralith a best practice.
+In particular, given that a state file can only be modified as an atomic unit,
+any long plans or applies will block other developers.  To get around this,
+`terralith` disables locking and state refresh on a `plan`, meaning that
+multiple plans can be executed at the same time.  An `apply` will still lock the
+state.
+
+A single state file also means that managing access may have to be done
+differently.  All of the infrastructure is split out across multiple modules, so
+access policy can still be made based on which files have been modified, but
+there is only one state file and one directory, which may impact how someone is
+doing access control.
+
+I will be interested to know how much these limitations matter in real
+infrastructure.  Most users are probably using a tool to orchestrate their Tofu
+runs.  That tool should be smart enough to know when certain operations can be
+performed concurrently and which need to be queued.  It also probably can manage
+apply requirements and access control.  There is always open source
+https://github.com/terrateamio/terrateam[Terrateam] (yeah yeah, I'm biased) if
+one is looking for a solution, but plenty of choices exist out there.
+
+Terralith is a proof of concept and I plan on testing it against more real-world
+examples.  What I like about it is how thin of a wrapper it is around Tofu,
+unlike Terragrunt and Terramate.  That isn't to say Terralith is a drop in
+replacement, but it accomplishes a lot with very little.
+
+This also wouldn't be much to roll into OpenTofu.  I could imagine it adding a
+`stack` block which is the same as a `module` block except it can be explicitly
+targeted with a `-stack` parameter.  I think a more challenging change would be
+if OpenTofu could allow more fine-grained state access.
+
+== Conclusion
+
+Making the PoC lead to a great discussion in the
+https://opentofu.org/slack/[OpenTofu Slack] with Martin Atkins, one of the
+OpenTofu developer.  How, and most importantly if, OpenTofu should try to
+support a Terralith better.  There was no conclusion, but he was very thoughtful
+about the pros and cons, the use cases, and what it would mean to support those
+use cases, and provided perspective and context.
+
+What I found most interesting in learning about Terraliths is that it was hard
+to get concrete examples of when and how a Terralith fails.  The Masterpoint
+blog post lays out explicit limitations of a Terralith and gives us points to
+have a discussion around, but for many people I talked to, they simply didn't
+trust the tooling.  They didn't trust a plan to either accurately represent the
+changes or to be faithfully applied.  And they didn't trust `-target` to do what
+the documentation says.  I think this lack of trust in tooling is something that
+should be understood more.  How can that be improved?  Additionally, I felt a
+lot of the negative sentiment around a Terralith was based on rumors and
+stories.  When I asked for concrete examples of the last time a plan was not
+accurate, I couldn't get first-hand accounts.  I don't know how bad those early
+days were but it left its mark.  The only exception in those who I talked to was
+Robert Hafner, author a book on Terraform and OpenTofu, who was supportive of a
+Terralith.
+
+Of course, my sample was people who were interested in talking, had opinions,
+and wanted to express them.  I'm sure there are plenty of users out there, with
+a Terralith, making changes day-in-and-day-out, getting by just fine.  But if
+you are new to Terraform and OpenTofu, and ask for help, those are the voices
+that will lend their view.
+
+I went into this Terralith-curious and came out very much in support of a
+Terralith.  I just think, despite the limitations, being able to plan all of
+your infrastructure at once is too valuable to give up.  I trust Tofu to create
+an accurate plan and I trust Tofu to apply it.  I think that the general
+recommendation should be to do a Terralith unless your situation really
+precludes it.
