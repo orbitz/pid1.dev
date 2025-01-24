@@ -8,8 +8,8 @@ NOTE: I will refer to OpenTofu in this post, however everything I say applies
 equally to Terraform.
 
 Tofu uses https://opentofu.org/docs/language/syntax/configuration/[HCL] to
-define infrastructure.  It's a fairly simple.  Closer to a configuration
-language than a programming language.  Choosing a
+define infrastructure.  It's fairly simple.  Closer to a configuration language
+than a programming language.  Choosing a
 https://en.wikipedia.org/wiki/Domain-specific_language[DSL] for a product can be
 hit-or-miss, but in this case I'm fairly pro-DSL.  Given the goals of Terraform
 (the project OpenTofu is a forked from), using something like YAML would quickly
