@@ -3,6 +3,9 @@ baseURL = 'https://pid1.dev/'
 languageCode = 'en-us'
 title = 'pid1'
 
+[params]
+og_image = "/images/og.jpg"
+
 [module.hugoVersion]
 min = "0.113.0"
 
