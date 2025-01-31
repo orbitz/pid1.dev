@@ -64,4 +64,4 @@ buttload of funding, I would love to make a hardware company that speaks
 Chromecast, is as tiny as possible, and just works.  If you want to create an
 account because maybe you want to restrict who has access to it (using in a
 public kiosk or something) fine, you can do that if you want.  Maybe some brave
-sole will take over the Chromecast world as Google slowly turns it to trash.
+soul will take over the Chromecast world as Google slowly turns it to trash.
