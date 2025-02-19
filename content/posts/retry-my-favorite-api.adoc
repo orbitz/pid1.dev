@@ -1,0 +1,113 @@
+---
+title: "retry: My Favorite API"
+date: 2025-02-21T00:00:00+01:00
+draft: false
+---
+
+I like an API that captures a problem and expresses it concisely.  I imagine
+this is how mathematicians feel when they create a beautiful proof.  I've always
+enjoyed a good API but it wasn't until I worked with one of my best friends, who
+has a background in type systems, that I really started to appreciate what it
+means to create a good API.
+
+I have a bunch of APIs I like but probably my favorite is `retry`, which I've
+implemented in several languages.
+
+The Ocaml type definition of retry is:
+
+[source,ocaml]
+----
+val retry :
+  f:(unit -> 'a Fut.t) ->
+  while_:('a -> bool) ->
+  betwixt:('a -> unit Fut.t) ->
+  'a Fut.t
+----
+
+You can ignore the `Fut.t` stuff, that is because the function asynchronous.
+
+`retry` runs a function `f`, calls `while_` with the result, if `while_` returns
+`true`, it calls `betwixt` with the result, then it calls `f` again.
+
+. `f` - The function we want to execute.
+. `while_` - Testing the result.
+. `betwixt` - Some work to do between retries.
+
+A few helper functions:
+
+[source,ocaml]
+----
+val finite_tries : int -> ('a -> bool) -> 'a -> bool
+
+val series :
+  start:'a ->
+  step:('a -> 'a) ->
+  ('a -> 'b -> 'c Fut.t) ->
+  'b ->
+  'c Fut.t
+----
+
+The `finite_tries` function takes a number of tries and a test function.  It
+calls the function, and returns its value.  On every call, it subtracts one from
+the tries.  When the number of tries hits `0`, it returns `false`.
+
+The `series` function takes a `start` value, a `step` function, and a function
+which gets called with the stepped value and another value and returns a new
+value.  On every call, it performs the `step` function on the existing value.
+
+With all this, we can implement retries with a cap on how many times it will try
+and with dynamic back-off.
+
+Here is an example of a function that performs a GitHub call a maximum of
+`tries` times (default is `3`), and retries if there is an error performing the
+request, or the HTTP response is greater than or equal to `500`, or there is a
+rate limit blocking the call.
+
+Between each call it waits, starting at, `1.5` seconds and multiplying by `1.5`
+on each retry.  However, the GitHub API includes when the call can be performed,
+in which case if it is a rate limit being hit, it waits until the time the API
+says to wait.
+
+[source,ocaml]
+----
+retry
+  ~f:(fun () -> Githubc2_abb.call t req)
+  ~while_:
+    (finite_tries tries (function
+      | Error _ -> true
+      | Ok resp -> Openapi.Response.status resp >= 500
+                   || is_secondary_rate_limit_error resp))
+  ~betwixt:
+    (series ~start:1.5 ~step:(( *. ) 1.5) (fun n resp ->
+         match resp with
+         | Error (`Missing_response resp) ->
+             let open Abb.Future.Infix_monad in
+             retry_wait n resp >>= Abb.Sys.sleep
+         | Ok resp ->
+             let open Abb.Future.Infix_monad in
+             retry_wait n resp >>= Abb.Sys.sleep
+         | Error _ -> Abb.Sys.sleep n))
+----
+
+I've also implemented this in Python, and the implementation is pretty straight
+forward.  The code can be found
+https://github.com/terrateamio/action/blob/8e72418cb73b1f1695ebc625d2d2cc85d8f53772/terrat_runner/retry.py[here].
+
+An example usage in Python which we use to wrap calls using `requests`:
+
+[source,python]
+----
+def _wrap(f):
+    (success, res) = retry.run(
+        lambda: _wrap_call(f),
+        retry.finite_tries(TRIES, _test_success),
+        retry.betwixt_sleep_with_backoff(INITIAL_SLEEP, BACKOFF))
+
+    if not success:
+        raise res
+
+    return res
+----
+
+`retry` isn't going to change your life but it's nice to just appreciate an API
+that really captures its purpose.
