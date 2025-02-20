@@ -89,7 +89,36 @@ retry
          | Error _ -> Abb.Sys.sleep n))
 ----
 
-I've also implemented this in Python, and the implementation is pretty straight
+But we can do more than just retry something failing.  The following code reads
+from a socket until a specific number of bytes are read or the connection is
+closed.  It also guarantees the scheduler doesn't get starved by putting a
+zero-tick sleep between each operation.  This last part is more of an
+idiosyncratic element of Abb but the important part is that it guarantees
+fairness across all scheduled tasks:
+
+[source,ocaml]
+----
+retry
+  ~f:(fun () ->
+    let open Abbs_future_combinators.Infix_result_monad in
+    Abbs_io_buffered.read
+      conn.r
+      ~buf
+      ~pos:0
+      ~len:(Bytes.length buf)
+    >>= fun n ->
+    Buffer.add_subbytes b buf 0 n;
+    needed_bytes := !needed_bytes - n;
+    Abb.Future.return (Ok n))
+  ~while_:(function
+    | Ok 0 | Error _ -> false
+    | Ok _ -> !needed_bytes > 0)
+  ~betwixt:(fun _ ->
+    (* Force a scheduler tick so we don't starve the system *)
+    Abb.Sys.sleep 0.0)
+----
+
+I've also implemented `retry` in Python, and the implementation is pretty straight
 forward.  The code can be found
 https://github.com/terrateamio/action/blob/8e72418cb73b1f1695ebc625d2d2cc85d8f53772/terrat_runner/retry.py[here].
 
