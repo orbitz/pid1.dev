@@ -1,0 +1,82 @@
+---
+title: "Is the Unix Philosophy Still Taught in School?"
+date: 2025-02-28T00:00:00Z
+draft: false
+---
+
+The https://en.wikipedia.org/wiki/Unix_philosophy[Unix Philosophy] defines a
+culture of how to write tooling in the Unix world.  At its core, the Unix
+Philosophy is about designing tools that work together.  A consequence is that
+there must be some rules or convention such that programs can communicate.  The
+power of the Unix Philosophy is that it lets us both automate our workflows and
+also build more sophisticated and powerful solutions by combining tools.  The
+most common conventions in the Unix world are:
+
+. A program should have an exit code of zero on success and non-zero on
+failure.
+. A program should output the business stuff to `stdout`.
+. A program should output other stuffs to `stderr`.
+
+Having written several integrations for https://terrateam.io[Terrateam], such as
+checkov and OPA, I've come across way more tools than I expected that do not
+follow the conventions.  I find this especially surprising that these tools are
+made for the DevOps space yet not following the rules for how to make a tool
+automatable.  Two particular integrations stand out.
+
+The first was a security tool that exited with zero even when a security policy
+was violated.  The developers were very nice when this was brought to their
+attention but, for some reason, just changing the exit code was not an option
+for them so instead I had to parse the `stderr` logs to determine if the tool
+failed.
+
+The other is a popular Terraform/Tofu wrapper.  When used in an interactive
+terminal, it outputs what you'd expect to see.  However when you run it as part
+of automation it decides that it should, instead, redirect all output from the
+program it is wrapping through its logging interface.  The end result is that
+almost all output now goes to `stderr` even if the wrapped program wrote to
+`stdout`.  It does this to add some metadata to the output lines.  They call
+this process "enrichment".  For automation, you see nothing in `stdout` and
+wonder what is going on and why it doesn't work.  At least, in this case, there
+was configuration available to turn that functionality off.
+
+And there are plenty of other examples I've come across in other places.  The
+https://click.palletsprojects.com/en/stable/[click] package for Python does some
+weird trickery with `stdout` and `stderr` when it's run in a particular way that
+can cause programs to
+https://stackoverflow.com/questions/73311668/how-do-i-test-that-command-sends-subprocess-output-to-stderr[unexpectedly
+fail].
+
+[NOTE]
+=====
+You can argue that this isn't a bug in click, because the Python docs state that
+`sys.stdout` and `sys.stderr` may be replaced by something that is not a file
+descriptor, so it is actually well within its rights to do this.  But this is a
+problem if you're running another program and want to redirect its output to
+your `stderr`, that click has no replaced with something other than a file.
+Certainly it's an unexpected result.
+=====
+
+What's frustrating about this is that it makes my code more complicated.  Rather
+than just testing the exit code, I have to rummage through `stderr` and read
+some tea leaves to decide if an error occurred.  Or rather than just output
+`stdout` to `stdout`, I have to figure out how to configure this program to do
+less work and stop logging its output via its logger.  And I'm sure, in the case
+of the logger, that the decision was debated and the developers came down on the
+side of "enrichment" being a useful.  But the answer is actually "no, it's not".
+I had to waste time debugging it and then reading through docs to figure out why
+it was happening.  If you want to do cute things in automation, then let me
+opt-in, not opt-out.
+
+To what degree is this a trend or just a few app developers making their own
+decisions?  I have no idea.  I have no data.  Just vibes.  I feel like I've
+noticed a general sense of developers not understanding the technology at a
+system level.  More and more job candidates can't answer questions around basic
+operations, like how to SSH into a machine.  AI is enabling a whole new
+generation of developers but one downside of it is that AI is not education.  It
+can be used for it, but it really only answers the questions it is asked, and
+someone needs to know how to ask the right questions.
+
+To the software developer that is working on the next cool DevOps tool, please
+make it just work inside the Unix Philosophy by default.  Let me opt-in to the
+cool features.  The value tools bring to the ecosystem is being part of the
+ecosystem, not doing the unexpected.
