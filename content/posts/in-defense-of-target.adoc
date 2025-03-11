@@ -1,0 +1,218 @@
+---
+title: "In Defense of -target"
+date: 2025-03-14T00:00:00Z
+draft: false
+---
+
+I've been, rightly, downvoted in r/terraform for recommending
+https://old.reddit.com/r/Terraform/comments/1j55d1p/steps_to_break_up_a_terralith/mgo8ghx/[using
+-target] in production.  I say "rightly" because I know it's a controversial
+suggestion and I've just sort of dropped it like a bomb without defending my
+position.  So here is my defense.
+
+== tl;dr When and how to use -target
+
+My concrete recommendation on when to use `-target` is as follows:
+
+If your infrastructure is hitting the point that `plan` operations are taking
+too long and slowing you down, rather than refactor your code into multiple root
+modules, you should refactor it into child modules, and then use `-target` in
+automation to plan those specific child modules independently.  With this,
+`-target` is used in a principled and controlled fashion, not just targeting
+arbitrary resources.  This gives us many of the speed benefits we would get by
+refactoring our code into multiple root modules but we also lets Terraform/Tofu
+handle the heavy lifting of orchestrating our runs and we get to see the
+complete impact of a change because `-target` will plan every resource impacted
+by the change, even if it's not listed in `-target`.
+
+== What is -target
+
+In order to defend my position, first a little context.  The situation where
+I've been recommending using `-target` is for maintaining a
+link:/posts/terralith/[Terralith].  Rather than split a Terralith into a bunch
+of root modules, I recommend maintaining a Terralith and using `-target` to
+conceptually split it up.
+
+The problem with `-target` is not that it is bad but that that it has a bad
+reputation.  Terraform and OpenTofu even spit out a warning (that cannot be
+turned off, AFAIK) if you use it:
+
+> Note that the -target option is not suitable for routine use, and is provided
+  only for exceptional situations such as recovering from errors or mistakes, or
+  when Terraform specifically suggests to use it as part of an error message.
+
+This warning annoys me for a few reasons.  First of all, don't go tellin' me how
+to manage my infrastructure Terraform/Tofu.  I'm the boss.  But more seriously,
+there is nothing incorrect or broken about the implementation of `-target`, it
+works entirely as the documentation says, so if your problem fits into the
+solution that `-target` provides, then it's perfectly reasonable to use it.
+
+What does `-target` do?  It limits the operation that Terraform/Tofu is doing to
+the addresses passed in via `-target` as well as any dependencies of those
+addresses that are impacted by the change.  The last part, in particular, is
+important.
+
+== The problem with -target
+
+The problem with `-target` is not the functionality itself but rather that it is
+historically used in an unprincipled way.  The reputation it has (probably, in
+large part, due to the warning) combined with the reality that most uses of
+`-target` are in situations where the infrastructure is in a bad state, further
+cement that `-target` is bad practice.
+
+Now, I think we could have a reasonable debate on if the scenarios where
+`-target` is used should negatively reflect on the feature itself.  I stand on
+the side of "no".  We should look at what `-target` does, what scenarios it has
+value, and evaluate the feature on its own merits.
+
+== Why do I care?
+
+Splitting your infrastructure across multiple root modules is the best practice,
+everyone agrees on this, and fighting that is an uphill battle, why do I care?
+
+=== At-scale infrastructure is still small
+
+Well, for one, it just grinds me gears.  Even large infrastructure is at a
+scale, in terms of size of data or even API calls, that is still small relative
+to the problems we solve on a daily basis with software.  The Terrateam SaaS
+database already has way more data in it than will ever need to be represented
+in the largest organizations Terraform state file.  We shouldn't be having to
+make these concessions for such a small amount of data.  We can do this.  We can
+write a CLI tool that can manage this amount of data successfully.  We are
+capable.
+
+=== The model does not change the infrastructure
+
+Secondly, I genuinely think, of the options we have available to us, multiple
+root modules is the worst representation of our infrastructure.  Think about it
+like this: we have some infrastructure out there.  Whether we choose to
+represent it as a Terralith or as multiple root modules, that infrastructure is
+still the same.  The physical infrastructure is not impacted by our choice of
+representation.  For an analogy, if we take a house, we can choose to represent
+that house as two dimensional blueprints, as a three dimensional digital model,
+or even as a three dimensional physical model.  The actual house does not change
+based on which model we choose.
+
+That means we should choose the model that gives us the most functionality.  In
+my opinion, a Terralith is the model with the most functionality.  With a
+Terralith we can:
+
+. Plan all of our infrastructure in one operation, if we want to.
+. Using `-target`, we can plan any subset of our infrastructure.  We even get to
+see how dependencies have changed even if we did not specify them in the
+`-target`.
+. We can move resources around our state and refactor at-will using declarative operations,
+such as `move` blocks and just normal refactoring code techniques.
+. We can see everything in one place.
+. We don't have to worry (as much) about orchestrating operations.  I say "as
+much" because there simply are some scenarios where we need to let one piece of
+infrastructure complete provisioning before we can run the other.  But a
+Terralith doesn't make that any worse than multiple root modules.
+
+Contrast this with multiple root modules:
+
+. It is, by definition, not possible to plan all of our infrastructure.  While
+"blast radius" is often cited as a reason to prefer a multiple root module
+architecture, it's actually the opposite!  Multiple root modules makes
+understanding the blast radius harder.  If we delete a resource that other root
+modules depend on, our infrastructure is broken no matter how many root modules
+we have, and we can see that at all given the plan.
+. We cannot, dynamically, choose which portions of our infrastructure to plan.
+We are locked into the root module decisions that we've made when we chose to
+split our infrastructure out.
+. We cannot use declarative techniques to refactor our code across root modules.
+A `move` block only works within an existing root module.
+. Depending on how we organized our code we may or may not be able to see
+everything in one place.  If root modules are in a monorepo, then that's not
+bad, however if it's across multiple repos then we need to know about every repo
+to understand our infrastructure.
+. We have created an orchestration problem.  If root module B depends on root
+module A, now we have to encode that somewhere, and some tooling has to run that
+for us, making sure dependencies are executed.
+
+If our infrastructure is "one thing", a Terralith lets us express that "one
+thing" better than multiple root modules.  It more directly represents our
+infrastructure.
+
+== How am I wrong?
+
+Obviously, the only reason I can write this blog post is because my view is not
+the mainstream.  Even
+https://masterpoint.netlify.app/updates/steps-to-break-up-a-terralith/[my
+friends] disagree with me.  I insist, I do not have a
+https://scienceblog.com/15806/the-galileo-complex[Galileo Complex].  And I'm not
+alone in being perfectly OK with a Terralith.  There are dozens of us.  Dozens
+of us!
+
+> In my opinion teams should use a single root module for each project unless
+  there's a good reason not to. There's a huge value in being able to spin up an
+  entire development environment with a single command. It makes testing and
+  development significantly easier. If the root module consists of other
+  modules, then those can still be tested and developed on their own so you
+  aren't locked into launching the whole project if it isn't needed.
+-- Robert Hafner, Author of https://www.manning.com/books/terraform-in-depth[Terraform in Depth]
+
+While I think the state of Terraform/Tofu is sufficient to manage a Terralith
+at-scale, I think the situation is not ideal.  I believe we should be using a
+Terralith and putting pressure on the Terraform/Tofu developers to improve the
+places where is it insufficient.  My personal list of functionality that will
+bring a Terralith from workable to a no-brainer is:
+
+. A new concept that is functionally equivalent to a `module` block.  For the
+sake of conversation we can call it a `stack`, but that is a terrible name.
+What is special about `stack` in this fictional universe is that it can be
+targeted via a `-stack` CLI option.  All of this could just be aliases for
+`module` and `-target`, but the idea is we have some constraints on how this can
+be used.  A core issue with `-target` is that it's unconstrained.  You can use
+it in all sorts of ways that you don't actually want to.  This would allow the
+author of Terraform code to express "this can be operated on its own".
+. The ability to apply a `stack` in parallel.  While we can use `-target` or the
+hypothetical `-stack` parameter to operate on subsets of our code, if the
+underlying resources are represented in a single state file then we will not be
+able to apply multiple states in parallel.  Do state backends now actually
+manage multiple state files, one per `stack` or something like that?  Whatever,
+I don't care, what I do care about is the semantics.  The semantics being: we
+can apply multiple stacks in parallel while letting me conceptualize my
+Terralith as one big state file.  However it is implement, I must be able to use
+a `move` block to move resources between stacks.
+
+With these two features, we get a conceptual tool to express our infrastructure
+in a better way, and we get the ability to iterate faster by being able to
+perform applies in parallel even if semantically everything appears to be on
+giant state file.
+
+== Next Steps
+
+Even if we were to agree that a Terralith is the best way to represent
+infrastructure, the existing cultural momentum for multiple root modules is very
+strong.  In my experience, even getting to the point of discussing a Terralith
+requires pushing through a lot of resistance, and the mention of `-target` as a
+valid tool for production code is almost always like driving into a very thick
+wall.  The degree that using `-target` is frowned upon is so strong that I have
+failed to get anyone to articulate, on a technical level, why it's bad.  The
+culture is that we don't use `-target` in production.  Full Stop.
+
+All that is to say, there is very little progress to be made without first
+getting some subset of the culture believing that it is the right choice.  And
+changing culture is
+https://www.newyorker.com/magazine/2013/07/29/slow-ideas[slow].
+
+In truth, if there is a change, it probably won't really come from me.  I'm too
+abrasive for that sort of slow, step-by-step, change, I just want good Terralith
+tooling now.  So probably someone more thoughtful and diplomatic will make it
+happen, if it ever does happen.
+
+Assuming that the trend is towards both a Terralith and demanding the tooling
+support it better, I don't actually think it's a big technical lift from there.
+The biggest change will probably be in the interface to the state backend to
+support representing a single state in a more operationally friendly way.
+
+I do think we'll get there, though.  It might take awhile.  It might even take
+so long that something else supplants Terraform/Tofu.  Looking at what HashiCorp
+is doing, the goal of HCP Terraform Stacks is accepting that people want to view
+their infrastructure as more of a single unit.  I think the actual
+implementation is not great, it's just way too complicated, but that it's being
+approached, I interpret, as a tacit agreement that we want something better than
+multiple root modules.  We'll get there.  If you want to play around with some
+tooling I made to try to make this more possible, check out my PoC
+https://github.com/terrateamio/terralith[Terralith] project.
