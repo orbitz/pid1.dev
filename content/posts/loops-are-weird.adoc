@@ -169,7 +169,7 @@ get more features.  There are users that have need for better abstractions
 because they truly are treating their infrastructure as code and want to build
 infrastructure at scale.
 
-=== Thank you
+== Thank you
 
 Thank you to the folks at OpenTofu for answering the questions I had about the
 history of looping.  Special thanks to
