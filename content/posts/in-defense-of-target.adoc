@@ -4,6 +4,10 @@ date: 2025-03-11T00:00:00Z
 draft: false
 ---
 
+WARNING: Martin Atkins wrote a comment on reddit going into detail about how and
+when `-target` can get you into sticky situations.  I have added it to the
+bottom of this post and linked out.
+
 I've been, rightly, downvoted in r/terraform for recommending
 https://old.reddit.com/r/Terraform/comments/1j55d1p/steps_to_break_up_a_terralith/mgo8ghx/[using
 -target] in production.  I say "rightly" because I know it's a controversial
@@ -216,3 +220,61 @@ approached, I interpret, as a tacit agreement that we want something better than
 multiple root modules.  We'll get there.  If you want to play around with some
 tooling I made to try to make this more possible, check out my PoC
 https://github.com/terrateamio/terralith[Terralith] project.
+
+== Martin Atkins' Response
+
+> It's quite unfortunate that the discourse around this got so heated that it
+  seems like sometimes folks understand it as "you are bad if you rely on
+  `-target` ", when really the intent of that warning is instead "Terraform is
+  bad when you use `-target` ". Not "bad" in the sense of morally wrong, but bad
+  in the sense that it behaves incorrectly.
+>
+> What happens internally when you use `-target` is that Terraform builds its
+  dependency graph as normal, taking into account all of the available context
+  about what's declared in the configuration and what's recorded in the prior
+  state, but then just naively deletes huge chunks of that dependency graph
+  without any consideration for what any of those individual graph nodes might
+  have been representing and thus what behavior might be cancelled.
+>
+> Along with taking the direct actions that we typically think of as Terraform's
+  behavior, there's also a variety of general "bookkeeping" that Terraform wants
+  to do during a normal plan/apply round, such as:
+>
+> Making sure that all of the objects in the state are upgraded to suit the
+  schemas used in your current provider version selections.  Reconciling the
+  metadata in the state with the latest metadata in the configuration, such as
+  making sure both agree about the dependencies between objects and which
+  objects need create_before_destroy behavior.  Using `-target` means that
+  Terraform does not get its opportunity to do that bookkeeping for anything
+  that was excluded, meaning that you can leave the system in a weird state that
+  should not be possible, such as the state having dependency cycles recorded in
+  it, or having different objects in the state encoded using different versions
+  of the provider schema. Terraform can compensate for those things most of the
+  time, but I've had to help enough people who got stuck in a tangled mess that
+  could only be reconciled with state surgery -- and unfortunately this tends to
+  arise during emergency situations when you are trying to use Terraform in a
+  different way than you routinely would, and so unexpected errors are the last
+  thing you want -- that I tend to dissuade folks from using `-target` in any
+  pattern where you don't then immediately plan and apply without it to make
+  sure everything was left in a consistent state.
+>
+> The better news is that recent Terraform versions already have a better
+  implementation of this idea of excluding things from a plan/apply round
+  lurking as an experimental feature, which I think you can currently find some
+  words about in the main branch changelog. The so-called "deferred actions" is
+  a different take on this problem where the implementation still builds a full
+  graph and visits every node in the graph but then the implementation of each
+  node makes its own decision about what work to skip. This means that Terraform
+  can still do all of the hidden work it does to keep things consistent, but
+  will skip generating proposed changes for certain objects.
+>
+> I personally hope that this feature will become non-experimental at some point
+  and will be extended with a way for the operator to force Terraform to defer
+  work on a particular object and everything it depends on using a command line
+  option, so that folks can use that to get the scope-reducing benefits of
+  `-target` without the risk of later problems caused by Terraform's records
+  becoming inconsistent. At that point I would feel more confident in
+  recommending partial plan/apply rounds as a potential solution to certain
+  problems, but I've no idea what the plans are for concluding that experiment
+  so I'm just waiting to see. 🤞
+-- Martin Atkins' https://old.reddit.com/r/Terraform/comments/1j8ovus/in_defense_of_target/mhyb6sy/?context=3[Comment]
