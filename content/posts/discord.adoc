@@ -1,0 +1,9 @@
+---
+title: "Discord"
+date: 2025-03-25T20:00:00+01:00
+draft: false
+---
+
+I created a Discord server.  To join follow the link below.
+
+https://discord.gg/JnwnV3EvkD[Join Discord Server]
