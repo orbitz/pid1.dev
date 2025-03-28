@@ -1,0 +1,38 @@
+---
+title: "Design Needs More Brutalism"
+date: 2025-03-28T00:00:00+01:00
+draft: false
+---
+
+I was trying to use the mobile Google Authenticator app today and I couldn't
+read the entire name of the last code I have installed because of the stupid
+floating "+" button.
+
+The reality is, I sort of know which codes I have installed so I knew which one
+it was but it struck me: someone thought it was a good design system to have
+something that obscures the data the user is trying to look at.  The Gmail app
+is another offender, here.  The button to create a new email is floating over
+the list of email's I'm looking at and obscuring the subject line.  I have to
+scroll my email list in order to read it.
+
+Again, it's not a huge issue because the chances of me looking at the last email
+in my list is near-zero because there is so much email.  But why would you
+choose to have your UI philosophy based around keeping the user from seeing the
+information they are trying to consume?
+
+This is one of those things that maybe it looks cool when you're presenting
+screenshots in a meeting.  "Oh that neat button there" and it probably gets
+interesting sounding name like the "Action Button" or whatever.  But if you use
+the app for five minutes you realize it's stupid.  It's preventing you from
+doing the thing you want to do.
+
+I was on the website of whatever one of the latest AI SaaS is out there and they
+added a little floating dot that follows my mouse around for some reason.  It
+served zero purpose.  It was just distracting.  But at least it was just
+distracting and didn't actively hinder me from accomplishing my task.  But what
+was the point beyond using a few extra CPU cycles?
+
+I think design could use a fresh injection of Brutalism.  Stop making things
+cute just because it looks neat.  Make the design useful, first, and then maybe,
+MAYBE, add some fluff to it.  But, whatever you do, don't make your design
+philosophy actively hostile to the user like Material Design.
