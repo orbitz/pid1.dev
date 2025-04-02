@@ -1,0 +1,205 @@
+---
+title: "Match Tag/Query Pattern"
+date: 2025-04-04T00:00:51+02:00
+draft: false
+---
+
+This week I implemented a pattern I find myself reaching to quite often.  I call
+it the Match Set/Query Pattern.
+
+The pattern is simple and requires two elements:
+
+. Associating a piece of data with a Match Set.  The match set describes the
+data, usually key-value, like a database.  Maybe for a person you have
+`first_name = John`, `last_name = Adams`, `occupation = President`.
+. Defining a small Match Query language for performing queries on the match set.
+Something like `first_name = John or occupation = Farmer`.
+
+This weekend I implemented this for
+https://github.com/terrateamio/openinfraquote[OpenInfraQuote].  OpenInfraQuote
+is an open source tool for pricing the resources in Terraform plan and state
+files.  At oiq's core, it's a very simple engine which requires a pricing sheet,
+a usage file, and the Terraform files and it makes abundant use of match sets
+and match queries
+
+== Quick tangent: How pricing works in oiq
+
+The problem oiq solves is turning Terraform resources into a cost estimation.
+The most common use case is you are making a change to your infrastructure, so
+you plan the change and then you want to know how much that costs.
+
+To accomplish this, oiq divides the problem into two steps:
+
+. Matching - Given a price sheet and Terraform data, oiq matches Terraform
+resources with every row in the pricing sheet that matches.  And it's very
+common for a resource to match against multiple products.  For example, an EBS
+volume is priced by storage size and IOPS.
+. Pricing - Given the output of matching, it takes those resources and matched
+products and matches them against a usage file.  The usage file is necessary
+because not all data needed for pricing is available in the Terraform resources.
+For example, how much data will be stored in an S3 bucket is up to how the S3
+bucket is used in the real world.  oiq comes with a default
+https://github.com/terrateamio/openinfraquote/blob/main/files/usage.json[usage
+file] with reasonable defaults but a user can construct their own.
+
+[source]
+----
+$ oiq match --pricesheet prices.csv \
+  --output matches.json \
+  lambda.arm.plan.json
+
+$ oiq price --input matches.json
+
+Match date: 2025-04-02T19:23:46
+Price date: 2025-04-02T19:23:46
+Match query:
+Min Previous Price: 0.00 USD
+Max Previous Price: 0.00 USD
+Min Price: 30.00 USD
+Max Price: 46.30 USD
+Min Price Diff: 30.00 USD
+Max Price Diff: 46.30 USD
+----
+
+NOTE: The price is given in terms of ranges (`30 USD` to `46.30 USD`).  oiq
+works in price ranges.  If a product has multiple prices depending on unknown
+parameters, oiq will match it against the cheapest instance of the product and
+most expensive and give the range.
+
+== Match queries in oiq
+
+oiq uses match queries in the usage file because we need it to be very expressive.
+
+Take defining usage of an EC2 instance at 730 hours per month:
+
+[source,json]
+----
+{
+  "description": "Default AWS EC2 Instance hours",
+  "match_query": "type = aws_instance and service_class = instance and purchase_option = on_demand and os = linux",
+  "usage": {
+    "time": 730
+  }
+}
+----
+
+Pretty straight forward, the match query just requires all of those keys to have
+those values in the match set.
+
+A more interesting one is defining usage for AWS Lambda.  The resource for AWS
+Lambda can have `values.architectures` set.  If it is not set, that means `x86`,
+otherwise it can be set to `arm64`.  The usage entry for that looks like:
+
+[source,json]
+----
+{
+  "description": "Default AWS Lambda monthly duration, x86 (seconds)",
+  "match_query": "type = aws_lambda_function and service_class = duration and (not values.architectures or values.architectures=x86) and arch=x86",
+  "usage": {
+    "time": 1000000
+  }
+}
+----
+
+The match query `type = aws_lambda_function and service_class = duration and
+(not values.architectures or values.architectures=x86) and arch=x86` says:
+
+. The resource type must be `aws_lambda_function`
+. The service class (something that oiq defines) must be `duration`.
+. The `values.architectures` is NOT set or it IS set and it is `x86`
+. The arch is set to `x86` (another thing oiq defines).
+
+This very simple query language means we can express a lot of complex matching.
+
+== Narrowing pricing with match queries
+
+Match queries show up elsewhere in oiq.  While we could specify our usage file
+very narrowly if we wanted, even down to the region (products have different
+prices in different regions), it can be kind of a pain.  Instead, sometimes its
+easier to have a more generic usage file and then narrow the products even more
+in an ad-hoc way.
+
+The most common example is `region`.  The region of an AWS resource is not
+necessarily available in the state or plan files.  The user needs to input what
+region they want to perform pricing against.  Rather than modifying the usage
+file, you can specify a match query in the `price` command to narrow all
+products to a particular region.
+
+Taking our example from above, we could do the following:
+
+[source]
+----
+$ oiq match --pricesheet prices.csv \
+  --output matches.json \
+  lambda.arm.plan.json
+
+$ oiq price --input matches.json \
+  --mq 'not region or region = us-west-1'
+
+Match date: 2025-04-02T19:29:12
+Price date: 2025-04-02T19:29:12
+Match query: not region or region = us-west-1
+Min Previous Price: 0.00 USD
+Max Previous Price: 0.00 USD
+Min Price: 33.33 USD
+Max Price: 33.33 USD
+Min Price Diff: 33.33 USD
+Max Price Diff: 33.33 USD
+----
+
+NOTE: Because we narrowed the products to a specific region, our min and max
+price are now equal.
+
+The match query `not region or region = us-west-1` filters products by either
+not having a `region` in their match set or if `region` is there, it equals
+`us-west-1`.
+
+Match queries are useful in letting the user do arbitrary filtering but
+forcing the user to write that to narrow to region all the time is not a
+great UX.  So we can implement a specialization built on top of match queries:
+
+[source]
+----
+$ oiq match --pricesheet prices.csv \
+  --output matches.json \
+  lambda.arm.plan.json
+
+$ oiq price --input matches.json \
+  --region us-west-1
+
+Match date: 2025-04-02T19:29:12
+Price date: 2025-04-02T19:29:12
+Match query: not region or (region=us-west-1)
+Min Previous Price: 0.00 USD
+Max Previous Price: 0.00 USD
+Min Price: 33.33 USD
+Max Price: 33.33 USD
+Min Price Diff: 33.33 USD
+Max Price Diff: 33.33 USD
+----
+
+The `--region` parameter just translates to the match query `not region or
+(region=us-west-1)`.  As oiq gets common parameters, we can keep on adding CLI
+options that compile down to match queries.
+
+== A good pattern is multi-purpose
+
+What I like about patterns like the match set/query pattern is that it is useful
+in multiple contexts and it solves multiple problems in one go.  Using match
+queries, we have an expressive way to match usage to products.  We have a way
+for users to dynamically filter their products as well.  And we can build
+specializations on top of match queries, like `--region`.  oiq will be able to
+grow new functionality without modifying its core engine very much.
+
+This is a pattern we use in https://terrateam.io/[Terrateam] as well.  Users
+give portions of their repository tags and then use queries to connect
+functionality to those parts of their repository.  For example, you might define
+every file under the `prod/` directory as having the `production` tag, and then
+define an RBAC policy for the `production` tag which limits applies to specific
+teams.  While it takes a little bit to get used to, it allows users complete
+control over how their repository is specified.  For Terrateam, in particular,
+this is important because no two Terraform repositories have the same layout, so
+we need a lot of flexibility.  And I like features that are flexible and provide
+a foundation for implementing a lot of other functionality on top.
+
+The pull request to OpenInfraQuote implementing match queries can be found https://github.com/terrateamio/openinfraquote/pull/38/[here].
