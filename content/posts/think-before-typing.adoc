@@ -1,0 +1,57 @@
+---
+title: "Think Before Typing"
+date: 2025-04-11T00:00:00+02:00
+draft: false
+---
+
+One of the primary skills I try to impart to people that I mentor is to "think
+before you type".  This is obviously not a new idea but I suspect, with the
+proliferation of LLMs to write code, that stopping to think will be a rarer
+skill in software engineering.
+
+An analogy I use is that coding is like getting from A to B.  You don't start
+going in a direction until you know which direction you need to go.  You need to
+understand where you want to be before even any automation can help you.
+
+In my experience, this commonly plays out in two ways:
+
+. Implementing a feature and just start writing the code for it.  Often times
+features have edge cases that you need to think about in order to realize and
+those edge cases impact the architecture of the code.  On an existing code base,
+new features often need to be considered within the context of the existing
+features which might require quite a good deal of thought to ensure it fits with
+the existing goals and architecture, and most importantly, doesn't break
+anything unexpectedly.
+. Debugging.  I have, many times, been pairing with someone where we get an
+error and the person just starts trying things they think might solve the
+problem.  More often than not, the error message includes what went wrong and
+sometimes it includes how to resolve it.  Taking a minute to read the error and
+considering the change that caused it would have made what to do immediately
+clear.
+
+I think supporting someone to think more is where great mentorship shines.
+
+If you are mentoring someone and notice this, some things I keep in mind that
+might be helpful:
+
+. Unless you have hit the point where there is trust between the two of you, it
+could be that they feel a bit anxious around their mentor and are clicking
+around and trying things because an error makes them anxious.
+. Probably they are quite smart and they have been able to intuit themselves to
+solutions in the past.  This can work at a certain level of difficulty but, in
+my opinion, there is a ceiling.  In a complex world, just creating permutations
+of code will not make progress towards a complex solution.
+. Often times the mentee is young and inexperienced and impatience is a common
+trait when someone is younger.
+
+In all cases, my approach is to be supportive and explicit.  They may not
+realize what they are doing or think it's the only way to solve a problem.  It
+depends on the relationship.  In some cases, I have told the mentee to stop,
+push away from the keyboard, and take a few breaths.  In others I've not done
+anything when I've noticed it but brought it up as a discussion topic at the end
+of a session.
+
+I'm not a professional mentor, it's not an activity I specifically seek out,
+I've just had the opportunity to work with young, hard working, and curious
+engineers in the past, and have tried my best teach the lessons that I thought
+worked out from my experience.
