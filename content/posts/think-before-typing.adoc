@@ -17,7 +17,7 @@ In my experience, this commonly plays out in two ways:
 
 . Implementing a feature and just start writing the code for it.  Often times
 features have edge cases that you need to think about in order to realize and
-those edge cases impact the architecture of the code.  On an existing code base,
+those edge cases impact the architecture of the code.  In an existing code base,
 new features often need to be considered within the context of the existing
 features which might require quite a good deal of thought to ensure it fits with
 the existing goals and architecture, and most importantly, doesn't break
@@ -35,8 +35,9 @@ If you are mentoring someone and notice this, some things I keep in mind that
 might be helpful:
 
 . Unless you have hit the point where there is trust between the two of you, it
-could be that they feel a bit anxious around their mentor and are clicking
-around and trying things because an error makes them anxious.
+could be that they feel a bit anxious around their mentor, especially when
+things aren't working, and are clicking around and trying random things because
+they are nervous.
 . Probably they are quite smart and they have been able to intuit themselves to
 solutions in the past.  This can work at a certain level of difficulty but, in
 my opinion, there is a ceiling.  In a complex world, just creating permutations
