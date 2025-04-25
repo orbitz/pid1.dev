@@ -1,0 +1,98 @@
+---
+title: "On Bloat"
+date: 2025-04-25T00:00:00+02:00
+draft: false
+---
+
+I recently got sent the slides for a talk titled _On Bloat_ by Rob Pike, that
+can be found
+https://docs.google.com/presentation/d/e/2PACX-1vSmIbSwh1_DXKEMU5YKgYpt5_b4yfOfpfEOKS5_cvtLdiHsX6zt-gNeisamRuCtDtCb2SbTafTI8V47/pub?slide=id.p[here].
+I don't know the origin of the talk or what the intention was and only have the
+slides to go by.
+
+The presentation makes the superficial observation that hardware has become
+significantly faster since the first mainframes yet software does not feel like
+it has utilized those gains well.  Computers don't boot instantly.  Logging into
+your bank has some noticeable latency, etc.
+
+This segues in to how code size has grown considerably and this has all sorts
+of consequences, including slower programs and more bugs.  The primary drivers
+of this are:
+
+. Features - Mo features mo code.
+. Layering - Rather than fixing things where they are broken, we add layers to
+work around them.
+. Dependencies - We are too eager to reach for a dependency.
+. Open source development - The incentives in open source are to accept code
+regardless of it standard, which is generally not great.
+
+I am definitely on the side of software should be leaner.  I generally implement
+my own dependencies rather than reach to something else and I'm very cautious
+in pulling in large dependencies.  I don't like the JavaScript ecosystem for
+many reasons, but one of them because the "Hello World" of a lot of web
+frameworks requires hundreds of dependencies.
+
+But I hate these slides.  The problem with them is that they make facile
+observations, without either providing the history, "how we got here", or
+actionable advice for moving forward.
+
+Take the slide on "Features".  The conclusion is:
+
+"Must account for the expense of maintenance and growth when deciding to add a
+feature.  Not all "useful" things are worth the long-term cost"
+-- Rob Pike
+
+Ok, so what are am I to do with that?  Tell a potential customer "no" when they
+ask for a feature that is important to them?  Maybe that is what "useful" means
+here?  I have no idea.  At least in the slide, there is nothing to indicate how
+I should consider a feature, how to decide what the long-term cost is, how to
+think about any of this.  It's just a tautological statement based on the
+obvious conclusion: less features means less code.
+
+Or take the section on dependencies.  The observation is that in various
+language ecosystems, we use more or less dependencies.  We tend to reach for a
+dependency rather than implementing the feature our selves.
+
+The conclusion is:
+
+"Do not add dependency on a component without being aware of all the indirect
+dependencies you are also adding to your project and what they do"
+-- Rob Pike
+
+Ok, what am I supposed to do with this?  Not use the dependency?  Do I have to
+rewrite everything myself?  Is size of dependency the only thing important?
+What if the smaller dependency is less maintained or poorer quality?  How do I
+weigh my options when it comes to choosing a dependency?  There is no direction
+on how to act.
+
+The advice at the end is:
+
+. Avoid features that add disproportionate cost
+. Implement things at the right level
+. Understand and minimize dependencies whenever possible
+. Maintain your dependency tree religiously.  Examine it regularly.
+. Don't use dependencies just to be lazy: understand the costs.
+. Finalize your changes before they land, not after.
+
+It's hard to imagine a less helpful list.
+
+I find the advice on bloat especially ironic given the source: a designer of Go.
+Go, a language that made the explicit decision to choose writing more code,
+increasing the bloat, rather than provide abstractions that reduce the amount of
+code a user has to write.  Only relatively recently did it get generics, such
+that we only need to write one instance of a function for all types that do the
+same thing.  Given its popularity and lack of expressiveness, Go is probably the
+largest offender in the contribution of bloat in the last 15 years.
+
+I agree with many of the observations but how does this advice help a
+practitioner?  How can we change something without understanding how we got
+there?  Changing this is about changing the culture of development.  Why do
+JavaScript developers tend to use so many more dependencies?  Is it viable to
+tell them to just stop?  Probably not.  And what is a developer to do about some
+undesirable behaviour in the platform they develop on, whether it be the browser
+or their OS.  Just fix it?  I would love it if we tried to improve the right
+layer, but how can we begin to do that without understanding why we build these
+layers in the first place?
+
+Bloat is real.  Bloat is a problem.  How to solve it is not as easy as just not
+implementing a feature or saying no to a dependency.
