@@ -24,7 +24,7 @@ of this are:
 work around them.
 . Dependencies - We are too eager to reach for a dependency.
 . Open source development - The incentives in open source are to accept code
-regardless of it standard, which is generally not great.
+regardless of its quality, which is generally not great.
 
 I am definitely on the side of software should be leaner.  I generally implement
 my own dependencies rather than reach to something else and I'm very cautious
