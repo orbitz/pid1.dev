@@ -1,0 +1,170 @@
+---
+title: "Decoupling"
+date: 2025-05-03T00:00:00+02:00
+draft: false
+---
+
+The infrastructure startup Wing Cloud, creators of
+https://github.com/winglang/wing[Winglang], recently
+https://thenewstack.io/wing-the-startup-failed-but-the-language-has-potential/[shutdown],
+after receiving a
+https://www.businesswire.com/news/home/20230718296353/en/Wing-Cloud-Raises-%2420Million-in-Seed-Funding-to-Build-Winglang-A-Unified-Programming-Language-to-Tame-Cloud-Complexity[$20
+million investment in 2023].  I did not find this surprising.  Not because the
+developers aren't great or because I'm a genius business person.  It wasn't
+surprising because the idea of Winglang went against my mental model of how
+technical progress happens.
+
+The idea of Winglang is to combine application code and infrastructure code.
+You use a "queue" object in your code and the Winglang environment constructs
+the underlying cloud infrastructure for that.  Maybe it's SQS on Amazon, and
+something else on GCP.  Not only is Winglang a new programming language but also
+it's a totally different way to provision and manage infrastructure.
+
+But this whole concept violates, what I think, is the number one (or maybe top
+three) lessons we've consistently learned over the last 50 years of software
+development:  always be increasing the degree of decoupling.
+
+This goes back, at least, as for as the 1972 paper
+https://rauterberg.employee.id.tue.nl/presentations/parnas-1972.pdf[On the
+Criteria To Be Used in Decomposing Systems into Modules] by D.L. Parnas.  In the
+paper, Parnas compares a few ways to break a problem into software components.
+The solution he arrives at is that by using the criteria of "information hiding"
+we decompose our system such that it is more likely that a change only impacts
+one or a few modules rather than the whole system.  For example, if you change
+the format of your input, only the input module has to change, rather than your
+whole program.
+
+A key quote:
+
+"By looking at these changes we can see the differences between the two
+modularizations. The first change is confined to one module in both
+decompositions. For the first decomposition the second change would result in
+changes in every module! The same is true of the third change. In the first
+decomposition the format of the line storage in core must be used by all of the
+programs.  In the second decomposition the story is entirely
+different. Knowledge of the exact way that the lines are stored is entirely
+hidden from all but module 1. Any change in the manner of storage can be
+confined to that module!  In some versions of"
+-- D.L. Parnas
+
+Decoupling is a lesson that we've seen reinforced for decades:
+
+. **POSIX** - While it may have its issues, by decoupling the operating system
+implementation from the APIs an application uses to interact with it, POSIX has
+enabled a number of operation systems, with their own interesting twists, to be
+implemented and used without having to rewrite every piece of software.
+. **C** - By decoupling the machine that C compiles to from the semantics of the
+language, a conforming C program can be compiled and run on any system that has
+an implementation.  C is 53 years old (first released the same year as the
+D.L. Parnas paper), and while the first version of C doesn't resemble what it is
+now, its flexibility has enabled it to be a language that new software is still
+developed in.
+. **Generics** - By decoupling the types from the algorithm, programming
+languages with generics let us express a single function that applies to a wide
+range of inputs.  Compared to C, or the early days of Java and Go, where one
+needed to either give up type safety or copy pasta code all over, changing just
+the type, generics allow writing more correct programs.
+. **ZFS** - ZFS decouples the storage available to a the file systems from how
+that storage will be partitioned.  If you use ext4 or some other file systems,
+you probably have been asked how you'd like to cut up your disks.  How big
+should `/tmp` be?  And `/var/logs`?  With ZFS, that doesn't matter, they can be
+as big as they need to be.
+. **NFS, SMB, iSCSI, Amazon EBS** - By decoupling storage from compute, we can
+utilize resources more effectively and separately scale the two components.
+Cloud providers, AWS in particular, use this very effectively.
+. **Wireless networking** - By, quite literally, decoupling where we physically
+are from where the connection to the network is, I can write this blog post on
+my couch without drilling holes in the wall to add an Ethernet jack.  And
+because of Starlink, I could cross the Atlantic ocean on a boat while working
+the entire way.
+. **The Unix Philosophy** - The Unix Philosophy is about writing programs that
+are meant to be used with other programs in ways the author never imagined.
+
+The list goes on and it's fractal.  Decoupling is a good design choice in
+everything from the a small library, to a CLI tool, to the whole architecture of
+a product, to how companies are structured.
+
+Decoupling is a good design choice because it increases our optionality.  With
+POSIX, I have more operating systems to choose from.  With ZFS, I don't have to
+worry about if I start writing a lot of content to `/tmp` because it has no
+fixed size.  With wireless, I can work from my couch, or from my office, and a
+Cafe can provide internet access to all of its patrons with only installing a
+little bit of hardware.  We can do more things when we decouple.
+
+Winglang, however, couples the application logic and infrastructure code via a
+single language.
+
+"Winglang addresses these pains by letting you work at a higher level of
+abstraction and allowing you to focus on business logic instead of cloud
+mechanics, only surfacing low-level details when it's needed."
+-- https://github.com/winglang/wing[Winglang GitHub]
+
+The reality is that the cloud mechanics are not abstractable.  Everyone of those
+knobs on an AWS service that we complain about on Day 1 exists because it serves
+a purpose on Day 2.  We may be able to provide reasonable defaults but they
+cannot be hidden away.
+
+Winglang focuses on solving the Day 1 problem at the cost of the Day 2 problem.
+Because our code is coupled to our infrastructure, we are limited in our options
+for solving Day 2 problems.  Consider questions that arise when thinking through
+a system:
+
+. What if Winglang's API doesn't provide access to the knobs we need?
+. What if Winglang, the programming language, turns out to not be a powerful enough
+language?
+. What if the best choice for the project/organization/company is to switch to a
+cloud provider Winglang doesn't support?
+
+Winglang has us committed to its solution.
+
+Compare this to decoupling our application code from our infrastructure code:
+
+. The question of if the framework we're using provides access to all the knobs
+we need disappears entirely.
+. If the language we chose turns out to not be the right choice in the long run,
+we have well understand practices and procedures for refactoring and moving to a
+new language, all without touching the infrastructure code.
+. As long as we have a tool that can manage the infrastructure on the new cloud
+system, we can bring up our application code on it.  Likely the application code
+will be changed but it won't be a complete rewrite.
+
+We have more options in this case than with Winglang.
+
+All this praise of decoupling isn't to say we need to do gymnastics to make it
+happen.  I'm reminded of trying to read from a buffer in early versions of Java.
+One had to construct, at least, three objects to do buffered I/O.  It was
+unpleasant and unhelpful.  Prior to cloud providers doing networked storage at
+scale, the consensus was that networked storage was a risk rather than a
+benefit.  It took a needing to make it work at scale to make it a no-brainer.
+If you're migrating off the cloud to on-prem, you're probably going to go back
+to coupled storage and compute.
+
+There are some places were coupling can make sense but it generally requires the
+benefit to be large to offset the cost of the coupling.  For example, storing
+and retrieving data in AWS S3 requires using specialized APIs.  Your application
+has to be designed for it.  But the value of having an infinite object store
+that can be accessed from anywhere so outweighs the cost that many developers
+use it without a second thought.  And look at what happened with S3.  It has
+become so useful that its API has been implemented in several cloud providers,
+decoupling applications from S3!  Now your application, which was formally tied
+to S3, can now be used with any S3-compatible storage.
+
+The power of decoupling is also why, I believe, we are no closer to a
+multi-cloud infrastructure platform that abstracts the different cloud
+providers.  The cloud cannot be abstracted.  A multi-cloud abstraction would
+couple all of them together.  The individual knobs are too useful.  When people
+go multi-cloud, it's not because they want to abstract away the resources, it's
+because they want to use the vendor-specific features of those resources.
+
+There are a few other companies and projects out there trying to generate
+infrastructure from code.  In general, I have a hard time imagining they will be
+used beyond niche workloads.  In the end they will probably become hard to
+distinguish from Pulumi.  Pulumi is not designed for writing applications but
+being a full programming language, it is great for implementing "cloud glue",
+little programs useful for doing management work inside of a cloud.
+
+When evaluating a new product or project or idea, I think it's useful to take a
+moment to judge whether or not it is increasing or decreasing the degree of
+coupling.  If it is increasing it, before getting too excited, take a minute to
+evaluate whether or not it is offsetting the cost of that coupling with the
+benefits.  If not, be skeptical.
