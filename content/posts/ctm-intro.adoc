@@ -1,0 +1,54 @@
+---
+title: "Concepts, Techniques, and Models of Computer Programming"
+date: 2025-05-28T00:00:00+01:00
+draft: false
+---
+
+https://www.amazon.com/Concepts-Techniques-Models-Computer-Programing/dp/8120326857?crid=3P902OAGGACKK&dib=eyJ2IjoiMSJ9.bG9QmHxGp8WiiJP1PhSeG-B5mgjBu8geVlB92DX989gx2_gNtG4hHZ2SBNkfX1O3593fAAFA-aDZsOtkyZUlDmXN03mEvRzDFIi7BpODUD-R-OCkzwxzYRpH0yjVfxVpnZNGqec1t1hoBFPaZ_Kgp99ztsRTVJiAUN7TCbcC8wOe3p-_IQivRldsmRdMcWTUR-FVCZH56WZqvwcY6xoDkdA2LS79wZTbmDGrunHpgpk.iCLnsC-17jAi1Jy_uVTwnOL5a1FVoWCMFTKtam2WAiY&dib_tag=se&keywords=concepts+techniques+and+models+of+computer+programming&qid=1748435391&sprefix=concepts+techni%2Caps%2C201&sr=8-1[Concepts,
+Techniques, and Models of Computer Programming], otherwise called CTM, by Peter
+van Roy and Seif Haridi is my "one book" for software development, if you need
+to pick one.
+
+What I love about CTM is that it covers a huge range in topics, from programming
+in the small to in the large, functional programming to object oriented
+programming, and sequential programming to concurrent programming.  Not only
+does it cover all these topics but, in my opinion, covers each of them
+sufficiently such that the reader can understand them and successfully use them
+correctly.
+
+I don't remember exactly when I discovered CTM but probably three to five years
+after it was published (which was in 2004).  It's 900 pages.  Definitely a text
+book.  I have a memory of somewhere between 2007 and 2009 reading about how
+ports (channel for messages) were implemented.  I struggled but after I
+understood it I was both very proud and felt I'd learned something new, and
+different, and something that I hadn't seen in mainstream languages before and
+still haven't.
+
+Where I remember CTM, and Mozart/Oz, really shining is in distributed systems.
+Distributed systems are especially difficult when it comes to failures and CTM
+made failures tractable.  Its usage of failure streams, in particular, is a
+concept I have not seen anywhere, despite it being very powerful and useful.
+Mozart/Oz isn't stuck in the traditional RPC world that seems so good at first
+but breaks down in the face of latency and failures.  It provides a model that
+lets you get a transparent-feeling RPC interface but also gracefully handles
+errors.  Its approach to distributed programming goes far beyond that, all while
+staying correct and simple (or as simple as possible).
+
+While I think CTM is a profound piece of work, it does not cover all elements of
+software development that I think are important.  I am very much a proponent of
+statically typed languages, such as Ocaml.  Mozart/Oz is a dynamically typed
+language.  But that's OK, there is only so much room.  I think that types are a
+valuable part of software engineering but the concepts CTM covers are
+independent of types and a side journey into types would likely obfuscate the
+discussion.  The value of CTM is not necessarily using every concept in the
+book, but being aware of them, understanding them, and using them to inform your
+own software development.
+
+My goal is to read, on average, two chapters per week and write a short post
+based on those chapters.  I am not a skilled enough writer, and I do not
+understand the concepts of CTM well enough, for any of these blog posts to be a
+replacement for actually reading CTM, nor is that the goal, but I think this
+book is simply so great that it's worth reading and thinking about deeply enough
+to write about.
+
+Up next: Chapters 1 & 2.
