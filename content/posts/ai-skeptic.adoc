@@ -1,0 +1,191 @@
+---
+title: "Reasonable Arguments for AI Skepticism"
+date: 2025-05-21T00:00:00+02:00
+draft: false
+---
+
+Every few months there is a news story about some AI company CEO saying that in
+a year almost all code will be written by AI.  The software engineer, where
+previously having tremendous bargaining power, is going from scarcity to
+redundant.
+
+The valuations are huge.  Windsurf was recently bought for
+https://www.reuters.com/business/openai-agrees-buy-windsurf-about-3-billion-bloomberg-news-reports-2025-05-06/[$3bn].
+Anthropic raises money on a bi-weekly cadence and most recently has a valuation
+of
+https://www.anthropic.com/news/anthropic-raises-series-e-at-usd61-5b-post-money-valuation[$61.5bn].
+Even the French are getting in on it, Mistral having a valuation of
+https://techcrunch.com/2025/05/05/what-is-mistral-ai-everything-to-know-about-the-openai-competitor/[$6bn].
+And Cursor raised at a
+https://techcrunch.com/2025/03/07/cursor-in-talks-to-raise-at-a-10b-valuation-as-ai-coding-sector-booms/#:~:text=Thrive%20Capital%20and%20Anysphere%20didn,at%20even%20higher%20multiples%20now.[$10bn]
+valuation.
+
+The hype is huge.  It's nearly impossible to read tech-related news without
+getting how AI is changing everything shoved down your throat.  There is a
+massive marketing machine behind making sure the whole world knows that AI is
+the future.  And it covers everything.  As a worker, if you aren't using AI,
+you're doomed.  If the West doesn't beat China in the AI race, freedom is over.
+
+I'm skeptical of the AI future for a few reasons.  Firstly, anything that is
+hyped this much with such a massive amount of money put into convincing us that
+it's the future warrants skepticism.  Secondly, having used LLMs, the results
+just aren't that compelling.  That isn't to say they don't work but that, in my
+opinion, they don't work nearly as well as it seems those with vested interest
+would like to convince us.  Most importantly, I cannot see how the model modern
+AI is built on top of, LLMs, can accomplish what they are being sold as.
+
+== The Argument
+
+I think there are a lot of arguments that motivate skepticism but here are three
+that I think are the most compelling.  But, there are major caveats.  I am not
+an AI/LLM researcher and I am not neuroscientist.  These arguments are based on
+how I see things and I think they represent reasonable inferences based on
+understanding how computers work.  I feel that I have tested these arguments
+against reasonable people who want the modern AI movement to succeed and I have
+not found the responses compelling.  So take that for what it's worth.
+
+Additionally, I am not saying that modern AI has no value.  I am saying that the
+claims of AI changing everything doesn't match up with how I see reality.  I
+think there are many people that might read this blog post and immediately say
+that AI is making them more productive.  If so, great.  There, absolutely, are
+use-cases where AI does a great job.  I think for someone generating code, we
+might disagree on how good that actually is.  My experience on code generation
+has been fairly negative, but my values might be different than yours.
+
+With all those caveats, here are, what I believe, three compelling arguments for
+being skeptical of the hype around modern AI.
+
+=== Hitting the Data Plateau
+
+The input to LLMs is the entire (text) internet.  That is more content than any
+human could possibly read in a multitude of lifetimes.  And even with that
+massive input, LLMs still fail to give correct answers to basic questions.
+
+Not only do they fail to give correct answers.  They say the wrong answer with
+absolute confidence.  When asked for links to sources, the links often:
+
+. Point to a website that no longer exists, making it impossible to verify.
+. ChatGPT will even markup text to look like a link but it is not clickable.  It
+is just text that is blue, bold, and underlined.
+. The link doesn't actually support the statement.
+
+The question: how much more data can we give AI before it improves?
+
+My claim: there is no amount of data that will make an LLM not give bogus
+answers.  It is simple not what is being modeled.  The LLM is giving the next
+most likely token given its existing context.  It happens to work pretty well in
+cases where there is a strong consensus on an answer.  But more data does not
+necessarily mean more consensus.  The model cannot handle these scenarios.
+
+=== Lack of Metacognition
+
+If you tell a human to jump off a cliff, assuming they are otherwise a normal
+human being, they won't do it because they can reason about what jumping off a
+cliff means for them.  LLMs consistently demonstrate that they lack the ability
+to think about thinking.  A great example of this is the
+https://www.reddit.com/r/ChatGPT/comments/12uke8z/the_grandma_jailbreak_is_absolutely_hilarious/[Grandma
+jailbreak].  The AIs have various topics they are not supposed to tell a person
+about.  In this case, how to make napalm.  The user was able to circumvent this
+by telling the AI that their grandmother would sing the recipe to napalm to them
+as a bedtime song and could the AI do the same and it happily did.  A human
+could see through this basic trick quite easily but the AI cannot.  Another
+example is an episode of the https://www.qanonanonymous.com/[QAA podcast] where
+one of the hosts gets the AI to tell it how to kill the other host by pretending
+its a game that they like to play.  The implications of this are clearly quite
+large.  There is no security model for LLMs outside of just never giving it the
+data you don't want it to respond with.
+
+I don't have the necessary understanding to be able to argue if this is how
+humans think or not, but there is clearly something different about how humans
+think about thinking that the LLM cannot do.  
+
+=== Triangle of Words
+
+If you picture a triangle where the base is at the bottom and the point at the
+top.  This triangle represents a concept.  The tip of the triangle is that
+concept as a single word and the base of the triangle is the words necessary to,
+with 100% accuracy, describe that concept.  When we prompt an AI to make
+something for us, or do something for us, we are trying to give it a prompt that
+is as close to the tip of the triangle as possible, that allows the AI to get as
+close to the base as possible.  If we say "make me an app to manage my To-do
+items" we hope that is sufficient for it to infer all of the complexity of the
+base of the triangle.  As we iterate on prompts, we are slowly moving our prompt
+down the triangle, closer to the base, as we add more words.
+
+If you think about how most corporations work, product owners or managers are
+prompting engineers in the same way engineers are prompting AIs.  A product
+owner tries to outline, in as few but accurate words as possible, what the
+product should do, and engineers turn that into code that is coherent with their
+understanding.
+
+And it's really hard.  There are lots of bugs.  There are lots of
+misunderstandings.  And that is with engineers that can think about thinking.
+As they are trying to work out what the product owner is saying, they can notice
+elements they have inferred that do not correspond with how they understand the
+product and ask questions to gain a deeper understanding.  The human engineer
+has context that they are not only updating at all times but also they are
+testing it against their model of reality.  AIs do not, and cannot, do this.
+
+If the claim is that AIs will allow non-programmers to make full and complete
+programs, that claim needs to explain how the AI can manage all that context.
+We know that context windows are expensive, even small ones, to maintain.  Can
+an AI maintain a context window to coherent build an entire application?  I
+haven't seen any evidence of that being true.
+
+If the claims is that AIs can help us write functions here and there, I think
+that is probably true but also with limits.  As a product grows, many functions
+do not exist in isolation.  The Terrateam product that I've helped build over
+the last few years has every few functions we need implemented that are narrow
+in scope.  They need to work within the existing feature set.  As a comparison,
+think if how hard it is to onboard a new engineer to an existing product.  What
+is onboarding?  It's putting as much context as possible into that engineers
+brain to such that they can make informed decisions.  The older and larger the
+product, the more context there is.  As things scale, it's even worse because
+you have to maintain context for the production system which often is different
+in meaningful ways than the test environment.
+
+== LLMs Are Good At...
+
+What I use LLMs for is as a search engine replacement.  I think that, in part,
+is because Google has really been dropping the ball on search quality.  They
+fell victim to the folly they identified when your incentives for search don't
+align with your incentives for making money.  I also sometimes do want the LLM
+to synthesize a little summary of whatever I'm search for.  It's helpful for me
+to quickly check if my mental model matches what it is saying.  The LLM is my
+first step, and if I'm lucky it gives me links that I can use to verify what it
+is telling me.
+
+The other place I've found success with LLMs is helping me transform
+well-understood ideas into something consumable in a different context.  Most
+recently, I was looking at adjusting my diet.  I did several iterations with
+ChatGPT, giving it different constraints I wanted on the meal plans.  It worked
+well for that.  I wasn't happy with the final suggestions it gave me, and some
+of the math around calories didn't make sense, but it gave me enough information
+I needed in order to be creative on my own.
+
+I have friends that use LLMs for study guides as well.  Not teaching them the
+information, but using the LLM to build a study program for them to learn the
+information on their own in a way that is consumable for them.
+
+What these examples have in common is that they are not about getting the LLM to
+be creating but to use its enormous database of information and filter it in
+different ways.
+
+LLMs do some really cool things.  Things that, pre-LLM, you'd think was a long
+ways off.  They do represent an interesting step in software.  But they
+fundamentally lack the ability to reason.  They fundamentally lack the ability
+to create new insights.  I believe that the novelty of LLMs will begin to wear
+off as we get accustomed to them.  Being on the 15th iteration of a prompt and
+getting even worse nonsense out of it will seem less of a funny meme and more of
+a painful reality.  I think that LLMs will find their place but it's not going
+to be with the VCs want us to think.  CEOs that went hard on AI in place of
+humans will be in for a painful wake up call as their software is full of
+security holes and is difficult to maintain.  And don't forget all of the
+information we are willingly give to the LLMs because we think it'll give us
+better answers and
+https://www.theverge.com/2024/6/13/24178079/openai-board-paul-nakasone-nsa-safety[what
+they might do with it].
+
+
+Be skeptical of the hype.  Be skeptical of the marketing machine.  Use the tools
+in ways that align with your values.
