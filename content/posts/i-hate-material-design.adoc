@@ -2,6 +2,7 @@
 title: "Design Needs More Brutalism"
 date: 2025-03-28T00:00:00+01:00
 draft: false
+tags: ["rant"]
 ---
 
 I was trying to use the mobile Google Authenticator app today and I couldn't

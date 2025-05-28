@@ -2,6 +2,7 @@
 title: "Loops In Tofu Are Weird"
 date: 2025-01-24T00:00:00+01:00
 draft: false
+tags: ["iac", "terraform", "tofu"]
 ---
 
 NOTE: I will refer to OpenTofu in this post, however everything I say applies

@@ -2,6 +2,7 @@
 title: "Think Before Typing"
 date: 2025-04-11T00:00:00+02:00
 draft: false
+tags: ["rant"]
 ---
 
 One of the primary skills I try to impart to people that I mentor is to "think

@@ -2,6 +2,7 @@
 title: "Siren Call of SQLite on the Server"
 date: 2025-02-14T00:00:00+01:00
 draft: false
+tags: ["rant", "sqlite", "software engineering"]
 ---
 
 At Terrateam, we are https://terrateam.io/blog/flying-away-from-aws/[big fans of

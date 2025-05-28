@@ -2,6 +2,7 @@
 title: "As Configuration"
 date: 2025-03-07T00:00:31Z
 draft: false
+tags: ["rant", "iac"]
 ---
 
 Mitchell Hashimoto post https://mitchellh.com/writing/as-code[As Code] this week

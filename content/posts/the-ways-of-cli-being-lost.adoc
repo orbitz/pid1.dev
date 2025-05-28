@@ -2,6 +2,7 @@
 title: "Is the Unix Philosophy Still Taught in School?"
 date: 2025-02-28T00:00:00Z
 draft: false
+tags: ["rant"]
 ---
 
 The https://en.wikipedia.org/wiki/Unix_philosophy[Unix Philosophy] defines a

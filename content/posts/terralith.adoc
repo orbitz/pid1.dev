@@ -2,6 +2,7 @@
 title: "Terralith: The Terraform and OpenTofu Boogieman"
 date: 2025-02-05T00:00:00+01:00
 draft: false
+tags: ["iac", "terraform", "tofu"]
 ---
 
 https://github.com/terrateamio/terrateam[Terrateam] has a very expressive

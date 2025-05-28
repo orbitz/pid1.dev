@@ -2,6 +2,7 @@
 title: "Concepts, Techniques, and Models of Computer Programming"
 date: 2025-05-28T00:00:00+01:00
 draft: false
+tags: ["ctm", "bookclub"]
 ---
 
 https://www.amazon.com/Concepts-Techniques-Models-Computer-Programing/dp/8120326857?crid=3P902OAGGACKK&dib=eyJ2IjoiMSJ9.bG9QmHxGp8WiiJP1PhSeG-B5mgjBu8geVlB92DX989gx2_gNtG4hHZ2SBNkfX1O3593fAAFA-aDZsOtkyZUlDmXN03mEvRzDFIi7BpODUD-R-OCkzwxzYRpH0yjVfxVpnZNGqec1t1hoBFPaZ_Kgp99ztsRTVJiAUN7TCbcC8wOe3p-_IQivRldsmRdMcWTUR-FVCZH56WZqvwcY6xoDkdA2LS79wZTbmDGrunHpgpk.iCLnsC-17jAi1Jy_uVTwnOL5a1FVoWCMFTKtam2WAiY&dib_tag=se&keywords=concepts+techniques+and+models+of+computer+programming&qid=1748435391&sprefix=concepts+techni%2Caps%2C201&sr=8-1[Concepts,

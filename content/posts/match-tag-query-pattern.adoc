@@ -2,6 +2,7 @@
 title: "Match Tag/Query Pattern"
 date: 2025-04-04T00:00:51+02:00
 draft: false
+tags: ["software engineering"]
 ---
 
 This week I implemented a pattern I find myself reaching to quite often.  I call

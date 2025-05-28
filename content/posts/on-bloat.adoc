@@ -2,6 +2,7 @@
 title: "On Bloat"
 date: 2025-04-25T00:00:00+02:00
 draft: false
+tags: ["rant"]
 ---
 
 I recently got sent the slides for a talk titled _On Bloat_ by Rob Pike, that

@@ -2,6 +2,7 @@
 title: "Decoupling"
 date: 2025-05-03T00:00:00+02:00
 draft: false
+tags: ["software engineering"]
 ---
 
 The infrastructure startup Wing Cloud, creators of

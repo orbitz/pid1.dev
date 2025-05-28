@@ -2,6 +2,7 @@
 title: "Discord"
 date: 2025-03-25T20:00:00+01:00
 draft: false
+tags: ["meta"]
 ---
 
 I created a Discord server.  To join follow the link below.

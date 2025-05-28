@@ -2,6 +2,7 @@
 title: "retry: My Favorite API"
 date: 2025-02-21T00:00:00+01:00
 draft: false
+tags: ["software engineering"]
 ---
 
 I like an API that captures a problem and expresses it concisely.  I imagine

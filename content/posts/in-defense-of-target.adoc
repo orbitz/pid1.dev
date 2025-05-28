@@ -2,6 +2,7 @@
 title: "In Defense of -target"
 date: 2025-03-11T00:00:00Z
 draft: false
+tags: ["iac", "terraform", "tofu"]
 ---
 
 WARNING: Martin Atkins wrote a comment on reddit going into detail about how and

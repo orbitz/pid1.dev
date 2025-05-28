@@ -2,6 +2,7 @@
 title: "Reasonable Arguments for AI Skepticism"
 date: 2025-05-21T00:00:00+02:00
 draft: false
+tags: ["ai", "skepticism"]
 ---
 
 Every few months there is a news story about some AI company CEO saying that in
