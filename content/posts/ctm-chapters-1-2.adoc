@@ -1,0 +1,145 @@
+---
+title: "Concepts, Techniques, and Models of Computer Programming: Chapters 1 & 2"
+date: 2025-06-06T00:00:00+01:00
+draft: false
+tags: ["ctm", "bookclub"]
+---
+
+The first few chapters are dedicated to getting the user acquainted with the
+basics of the programming language, the system, and the base concepts that will
+be expanded on through the book.
+
+== Preface
+
+"[Programming is] the act of extending or changing a system’s functionality. Programming is a widespread activity that is
+done both by nonspecialists (e.g., consumers who change the settings of their alarm
+clock or cellular phone) and specialists (computer programmers, the audience for
+this book)"
+-- Preface
+
+What is going to be a theme in this book is providing a very explicit and useful
+definition for a concept.  I really like this definition of programming.  It
+makes no value judgments, no gatekeeping, just what the concept is.  The book
+will focus on the programming that specialists focus on.
+
+CTM takes what it calls the "kernel language approach".  That is, rather than
+focusing on a particular paradigm, it will define the "kernel" of each of these
+concepts and provide sugar on top of it until we get something we are more
+familiar with.  The kernel language is the fewest number of concepts we need to
+express the idea and well defined semantics, giving a foundation we can build
+upon.
+
+One thing I find interesting re-reading this is how much this has informed my
+approach to software design.  When I am building anything I tend to start with
+core functions I need to perform and from there build out the actual data type
+definition that allows for those operations and optionally build out more
+ergonomic functionality that is based on that kernel.
+
+I am quite certain CTM was where I was introduced to this approach however it
+didn't really solidify until I got the opportunity to professionally work with
+my best friend who came from a programming language theory background.  He has
+an amazing ability to look at a problem, break it into its fundamental
+semantics, and then build up from there.  I think this one source of my
+productivity.  The Terrateam product, which is the synthesis, and trial by fire,
+of how I believe programming should be, is the home of NIH syndrome, but all of
+our libraries following the "kernel" approach allows a lot to be expressed with
+a handful of libraries and frameworks.
+
+Another place that the book has a clear and useful definition is abstraction.
+
+"We deﬁne an abstraction loosely as a tool or device that solves a particular
+problem. Usually the same abstraction can be used to solve many diﬀerent
+problems. This versatility is one of the key properties of abstractions."
+-- Preface
+
+This definition might seem too broad but I think that's OK.  It does not make
+the word less useful, it allows us to have productive conversations about
+abstractions without getting into the tar pit "well, actually, this isn't an
+abstraction because <insert your personal definition of abstraction here>".
+
+Finally, this book will use multiple models, whether it be functional,
+imperative, or object oriented.  The authors make no judgments on which models
+are better, they all have their purpose in the correct context.
+
+This multi-model approach is one thing I like about OCaml.  OCaml supports
+imperative, functional, and object oriented, programming models.  It's very
+pragmatic in that sense.  I don't think OCaml is sufficiently multi-model enough
+to be used as the language in this book in place of Mozart/Oz, you'd also get
+too lost in the weeds around the type system, but this insight of not picking a
+model but using the model that solves the problem I think is something that has
+been lost since Java unleashed OOP as The Way in 1995.
+
+== Chapter 1
+
+This chapter is a useful read but not a lot of interesting insights.  It's a
+tour of the language and runtime environment.
+
+One property of Mozart/Oz that is fairly unique are "dataflow variables".  This
+ends up being important to solving a bunch of problems in Mozart/Oz (dare I say,
+is the actual model the book ascribes to might be the "dataflow model")?
+
+Dataflow variables allow us to separate the creating of a variable from the
+binding of it and the semantics of what accessing an unbound variable.  In
+Mozart/Oz, accessing an unbound variable causes that thread of execution to wait
+until the variable is bound before continuing.  This is how we will implement
+concurrency that is easier to understand and deterministic than the traditional
+threads approach.
+
+Finally, I like the distinction made between an "object" and a "class".  An
+"object" a function with internal memory.  A "class" is a factory for objects.
+
+The following is an example of a class, it returns a function that has some
+internal memory.
+
+[source,ocaml]
+----
+let incr_class v =
+  let v = ref v in
+  fun () -> v := !v + 1; !v
+----
+
+To use it we can do:
+
+[source,ocaml]
+----
+let incr_object = incr_class 1;;
+incr_object ();;
+(* returns 2 *)
+incr_object ();;
+(* returns 3 *)
+----
+
+Again, I really like this clear and useful definitions that capture the relevant
+semantics of a concept.
+
+== Chapter 2
+
+This chapter is the first in the section covering computational models.  The
+first of which is the declarative computational model.  For the time being, this
+is defined as evaluating functions over partial data structures.  This is a
+foundational model in that functional and logic programming models derive
+from it.
+
+Much of this chapter is going over defining syntax and evaluation semantics of
+the programming language.
+
+This chapter also expands on the kernel language semantics.  We will define a
+language with the minimal number of concepts needed to express the particular
+idea and then build on top of that.  Objects oriented programming, for example,
+is a mutable piece of memory with a table of functions associated with it.  From
+that foundation we can build the more familiar concepts of OOP such as
+inheritance, and we can define that with syntactic sugar.
+
+This language consistently takes a concepts, defines it, shows how it can be
+specified in the language and built upon.
+
+There is a brief discussion on dynamic vs static typing.  The authors list a
+good list of reasonable trade-offs.  This book uses Mozart/Oz, which is a
+dynamically typed language.  That does not represent a judgment from the
+authors, but rather Mozart/Oz is a language meant to research various ideas, and
+the flexibility of dynamic languages facilitates that.
+
+== Roundup
+
+Not a lot of new material, necessarily, here, but necessary foundation for
+understanding the rest of the book.
