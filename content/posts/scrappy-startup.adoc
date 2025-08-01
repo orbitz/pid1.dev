@@ -49,7 +49,7 @@ Like the Unix Philosophy, where each tool should solve a specific problem and
 compose with other tools, we think features in a platform should be similar.
 Our features generally provide orthogonal functionality and can be configured to
 work in unison to provide a more powerful solution.  For most of Terrateam's
-life I have been the sole developer, and we are punching way about our weight
+life I have been the sole developer, and we are punching way above our weight
 because our product is so flexible.  That flexibility was driven, in large part,
 by empathy for our users.  Rather than force them to conform to us, we want them
 to retain their existing workflows.  We don't even believe in vendor lock-in,
