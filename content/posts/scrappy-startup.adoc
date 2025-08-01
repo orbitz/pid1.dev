@@ -1,0 +1,72 @@
+---
+title: "I'm a scrappy startup and I care about all our customers' usecases"
+date: 2025-08-01T00:00:00+01:00
+draft: false
+---
+
+I was a big fan of the original Chromecast.  The UX was simple: install the
+thing, get it on your Wifi, and then just send stuff to it from your phone.
+The end.  No remote.  No account.  Barely even any security!  It didn't do
+anything other than be a destination for whatever content I want to see on
+my TV.
+
+I recently bought whatever Google is calling the latest generation of Chromecast
+and it involves a whole account setup, it has a remote, collects a bunch of data
+about me (which it probably can get based on what I cast and my IP anyways),
+and, basically, it's just a TV.  It's still an HDMI dongle, but it's basically
+a TV.  I hated every second of it.
+
+I get it.  Not everyone just wants to use their phone to send content.  Some
+part of the market Google wants to get into are more used to the TV UX, so
+Google is providing it.
+
+The approach they've taken is just to force users into this account flow.  In
+doing that, they've left users like myself, who genuinely find the account-less
+flow superior, without an option.  It's not just Chromecast that is like this,
+the big tech companies tend to force whatever workflow they want on us.  AI
+features is the latest and most obvious.  Pretty much every big tech product
+I've used lately is trying to force an AI feature on me.  Even WhatsApp, the
+entire point of WhatsApp being private communication, has some AI functionality
+that I do not want and cannot get rid of.  Or Gmail has been adding some
+auto-complete functionality that is non-obvious how to turn off.  I used to be a
+big Mac OS X user because it provided both a novice-friendly interface but let
+advanced users be advanced users, it's just a Unix underneath, but left because
+Apple became, IMO, more and more hostile towards advanced users.
+
+While I was, begrudgingly, setting up this new Chromecast, I had a lot of time
+while waiting for it to setup to ruminate on how big the gap is in user empathy
+between Google and the company I co-founded, https://terrateam.io[Terrateam].
+
+We care about every one of our user's usecases.
+
+We worked hard to build an architecture that has very few opinions so we can
+support as many use cases as our users can muster.  When a user comes to us with
+a new use case that isn't supported, we almost always implement it as long as it
+fits into the model that Terrateam provides.
+
+Part of that is just how we view software: it should be capable and flexible.
+Like the Unix Philosophy, where each tool should solve a specific problem and
+compose with other tools, we think features in a platform should be similar.
+Our features generally provide orthogonal functionality and can be configured to
+work in unison to provide a more powerful solution.  For most of Terrateam's
+life I have been the sole developer, and we are punching way about our weight
+because our product is so flexible.  That flexibility was driven, in large part,
+by empathy for our users.  Rather than force them to conform to us, we want them
+to retain their existing workflows.  We don't even believe in vendor lock-in,
+our product is ridiculously easy to leave if you don't like it.
+
+The other part of this is simply that we're a scrappy startup.  That isn't to
+say that we are struggling.  We are bootstrapped.  We've built all of this with
+sweat instead of funding.  We do not have the marketing budget to convince
+people to use us.  We don't have the budget to hire an army of sales folks.
+
+What's more, we don't even want to have the power to lose user empathy and still
+succeed.  I know you can't get to be a big tech company without dropping "Don't
+be evil" from your charter, so maybe it's better if getting so large were not
+possible?  I know that's not going to happen but that doesn't mean everyone has
+to have big tech envy.  Except for the huge revenue, constant media coverage,
+and large yachts, there isn't much there.
+
+Being a scrappy startup is fine.  We're hitting our own internal definitions of
+success.  Our company is sustainable. And, most importantly, our customers give
+us really positive feedback.
