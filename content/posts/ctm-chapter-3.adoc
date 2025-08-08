@@ -1,0 +1,97 @@
+---
+title: "Concepts, Techniques, and Models of Computer Programming: Chapter 3"
+date: 2025-08-08T00:00:00+01:00
+draft: false
+tags: ["ctm", "bookclub"]
+---
+
+After a long hiatus, I'm back to doing the CTM bookclub.  It's been quite busy
+at work, but we (Terrateam) delivered GitLab support, are working on Bitbucket,
+and we've delivered a host of other changes.  Needless to say, I've been too
+busy for other fun activities like blogging.  But I've scraped some time
+together and going to aim to be more consistent.  What's helping is I'm doing
+this bookclub with my co-worker, so now there is a support group.
+
+== Chapter 3
+
+Chapter 3 is about declarative programming.  The chapter covers quite a bit and
+is a mix of basic programming tutorial, algorithms and data structures, and
+then some practical elements.  It covers quite a lot, but in detail it mostly
+covers an introduction to declarative programming and data structures.
+
+Within the context of the book, the definition of declarative programming is
+quite similar to what we call a "pure function".  A function, given the same
+inputs, will always produce the same outputs.
+
+Declarative programming has two main benefits:
+
+. Declarative programs are compositional.  They can be combined to form larger
+declarative programs.
+. Reasoning about declarative programs is simple.
+
+The book is pragmatic about what constitutes a declarative program.  It's
+Mozart/Oz, so we don't have a type system to enforce anything and Mozart/Oz has
+mutability.  Instead, the book accepts that if something is observably
+declarative, then it's declarative enough for our purposes.  I think that's
+fine.  As an Ocamler, I'm in no position to complain.  We have mutability,
+it's more of a mindset to try to avoid unnecessary mutation in Ocaml then the
+compiler enforcing it.
+
+One thing I liked in this chapter is the definitions of "iterative computation"
+and "recursive computation".  For most people, iterative is using a loop, and
+recursion is a function calling itself.  But CTM has much better definitions.
+
+**Iterative computation**: A loop whose stack size is bounded by a constant.
+
+**Recursive computation**: Iterative computation is a special case of recursive
+computation.  Stack size may grow as the input grows.
+
+Iteration computation has nothing to do with how that loop is expressed, it can
+be expressed recursively, as long as the stack size is bounded by a constant.
+And, in fact, all of the examples in the book of iteration are recursively
+defined.
+
+"Recursive computations are at the heart of declarative programming."
+-- Chapter 3
+
+The chapter goes over recursive programming, iterative programming, various data
+structures, how to translate between recursive and iterative implementations.
+It's a lot to cover but the book does justice to each subject.
+
+Out of, seemingly, nowhere, it goes into security.  I was originally a bit
+confused about this, but it comes together in the context of declarative
+programming.  Specifically, if we want to revoke security access, that is
+inherently not declarative.  For many security problems, we requite explicit
+state to resolve them.
+
+Another topic that is more tangentially related to declarative programming is
+its treatment of "small programs" and "large programs", both of which have very
+nice and concise definitions:
+
+**Small programs**: Written by one person over a short period of time.
+
+**Large programs**: Written by more than one person or over a long period of
+time.  The same person now and one year from now is considered two people.
+
+I can especially relate to the same person being two people over enough time.
+Like many, I've looked at code I've written six months ago and been confused as
+to who the author is.
+
+An important part of large programs is being able to maintain it across a long
+amount of time and a large team.  Declarative programming is especially
+important in this context.  We need to be able to reason about these large
+programs and the simpler we can make that job, the better.
+
+A small aside in programming construction is, as an Ocamler, using functors to
+describe a certain software components.  The term "functor" is used to avoid the
+confusion of "software component", as it is so generic.  A "functor" in
+Mozart/Oz is very close to a "functor" in Ocaml: it is a module specification
+that defines all of its inputs and outputs.  A declarative function of modules,
+essentially.
+
+== Conclusion
+
+Another solid, didactic, chapter from CTM.  A lot of content is covered, with
+clear definitions and excellent examples.  A bit boring in that it covers a lot
+of content that anyone familiar with software development has probably done, but
+it's just the third chapter so it makes an excellent reference.
