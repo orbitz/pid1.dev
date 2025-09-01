@@ -1,0 +1,171 @@
+---
+title: "Concepts, Techniques, and Models of Computer Programming: Chapter 4"
+date: 2025-08-22T08:52:25+02:00
+draft: false
+---
+
+Chapter 4 is about declarative concurrency.  This takes what we've learned about
+declarative programming and applies it to a concurrent execution model.
+
+A challenge of concurrent programming is nondeterminism.  A source of many
+painful, and in https://en.wikipedia.org/wiki/Therac-25[some cases fatal], bugs
+in software.
+
+A declarative concurrent model means that any nondeterminism is not visible to
+the programmer.  There are two reasons:
+
+. Dataflow variables can be bound only once.
+. Any operation that needs the value of a variable has to wait until the
+variable is bound.
+
+Some useful terms:
+
+* Scheduler - Picks which computational step to execute among all ready threads.
+* Ready - A thread is ready, or runnable, if its statement has all the
+  information it needs to execute at least one step.
+* Suspended - A thread that is not ready.
+* Blocked - The first statement of a thread is blocked if it does not have all
+  information it needs to execute.
+* Fair system - A scheduler that will eventually execute all ready threads.
+
+By extending Mozart/Oz with a `thread ... end` construct, the dataflow model from
+chapter 3 is extended to support concurrency.
+
+Adding threads to Mozart/Oz is not only about being able to do multiple things
+at the same time but it also allows you to make programs more modular.  Threads
+in Mozart/Oz are very cheap, the programmer should not be concerned about
+resource utilization when deciding to spawn a new thread.
+
+The most fundamental, and useful, modularity threads let you do in Mozart/Oz is
+streams.  Streams are a potentially unbound list of messages.  Because Mozart/Oz
+has dataflow variables and threads, a stream can be represented as an actual
+list where the tail of the list is an unbound value.  To iterate the stream,
+iterate the list and because of the dataflow variables, the list can be infinite
+in length and the consuming thread will wait until the next cons cell is bound.
+This provides a structured way to communicate between threads.
+
+Streams feel like a parallel to how lazy evaluation works in, say, Haskell.  It
+is not the same, because lazy evaluation happens on demand, but the ability to
+create unbound variables allows for breaking programs up very much in a way
+similar to https://www.cs.kent.ac.uk/people/staff/dat/miranda/whyfp90.pdf[Why
+Functional Programming Matters].
+
+Unlike in a lazy language, because a thread is producing elements in the stream,
+the stream can grow faster than it can be consumed, so there is a chance that
+the stream will consume all the resources of the machine.
+
+To address this, some way to cap the amount of work being produced is necessary.
+One option is to use back pressure but creating another stream where an element
+is added to it whenever the consumer is ready for more, and the producer waits
+on that stream, called lazy execution.  Another is to use bounded buffers.  Lazy
+execution has a major downside in that it kills throughput because of all the
+back and forth.  Bounded buffers is considered a "best of both worlds".  You can
+generate a bunch of work but not use up all the resources of the system.
+
+Coroutines are another way to express multiple threads of execution but in this
+case they do not run concurrently but allow for explicit context
+switches. Mozart/Oz provides ways to treat threads like coroutines by explicitly
+suspending and resuming threads.
+
+Eager evaluation executes statements in the order they appear.  This is a pretty
+easy mental model.  However, there is another model: lazy evaluation.  In lazy
+evaluation, operations are not executed in the order they are written but when
+their value is needed.  Mozart/Oz implements lazy execution by adding a `ByNeed`
+operator to the kernel language.  `ByNeed` takes a function.  The function is
+evaluated when the value of the variable it is bound to is needed.
+
+With all of these tools (eager evaluation, dataflow variables, concurrency, and
+lazy evaluation) Mozart/Oz can express a very wide range of programming models.
+A consequence of dataflow variables, however, is that implementing laziness
+requires concurrency.  When a value created with `ByNeed` is evaluated, it
+spawns a thread to do that.  An example:
+
+[source]
+----
+local
+  Z
+  fun lazy {F1 X}     X+Z end
+  fun lazy {F2 Z} Z=1 Y+Z end
+in
+  {F1 1}+{F2 2}
+end
+----
+
+Evaluating that expression requires that `F2` is evaluated at the same time as
+`F1` because we need to bind `Z` in order for `F1` to continue.  If we evaluated
+that, even lazily, from left to right, it would be a deadlock.
+
+I, personally, am not sure how I feel about laziness.  By making computation
+on-demand it certainly can use less resources, but it's also a trade-off in your
+computational model.  Actually executing a lazy expression is more costly than
+an eager one, once you do need the resource.  Certainly with a lot of effort
+behind the compiler you can do some smart things, but naively it seems that
+eager will (always?) be more efficient than lazy evaluation.  So is it worth the
+trade-off?  I'm not sure.  OCaml supports lazy evaluation and I have never
+really used it.  Maybe I'm just incorrect when I feel like a lazy expression is
+more expensive or maybe I just am not used to writing lazy code so my brain
+never tries to solve problems in a way that is sympathetic to lazy evaluation.
+I think another element of laziness in a language like OCaml is it that it's
+kind of like asynchronous programming in that laziness infects your functions.
+In OCaml, laziness is a type.  In Mozart/Oz, like dataflow variables, it's this
+implicit information with your variable and functions don't distinguish lazy
+variables from unbound variables from bound variables, so there is not a
+partition of all your code around these ways to express things.  In this sense,
+OCaml is a bit hostile towards any form of evaluation other than eager.  Section
+`4.5.8` does go over algorithm design for laziness, and while it does provides
+an example of using laziness to improve the performance of operations on a data
+structure, to me, the naive reader, it seems quite delicate, difficult to reason
+about, and unclear if the constant time costs of using laziness offset the
+benefits of laziness.
+
+While the last few chapters have been drilling in the benefits of a declarative
+model, the book is aware that not all problems can be solved using the
+declarative model.  Rather than shy away from it or trying to shoehorn
+everything into a declarative model (maybe like Haskell can feel if you are not
+too familiar with it?), it provides examples of such problems and how to solve
+them in a non-declarative way.  The book even goes as far as to show that in
+some examples trying to shoehorn a problem into a declarative solution results
+in worse code.  The book is not dogmatic about any approach, but letting the
+problem space define which approach provides the superior solution (in their
+subjective estimation).
+
+"Which approach is simpler: the first or the second? The first has a simpler
+model but a more complex program.  The second has a more complex model but a
+simpler program.  In our view, the declarative approach is not natural.  Because
+it is modular, a stateful approach is clearly the simplest overall."
+-- Chapter 4
+
+While the declarative concurrency execution model is deterministic,
+nondeterminism is a useful property of programs.  The example given is a server
+handling multiple connections.  The clients send messages at their own pace and
+the server needs to handle whichever messages it gets from whichever client.
+There is no deterministic order there.  This might make it harder to reason
+about the program but it is clearly a useful program, even if nondeterministic.
+
+We can add a new operations to the system to support this.
+
+. `WaitTwo` - This takes two unbound variables and returns the value of
+whichever one becomes bound first.
+. `IsDet` - This returns `true` or `false` depending on if the variable is
+bound.
+
+Both of these are covered in more detail later because they provide different
+ways to write useful programs.
+
+In reality, programs are composed of multiple programming models.  Maybe a
+declarative core with explicit state around the edges.  Or message passing for
+communication between declarative cores.  The hard work is figuring out of the
+two models work well together.  Shared state concurrency might work to solve a
+problem inside a single process but fall apart in a distributed module.
+
+One thing I never thought about: do exceptions make a declarative model no
+longer declarative.  The answer: they do!  Exceptions bad! (if you want to
+program declaratively).  The obvious place the exceptions show up in Mozart/Oz
+is when trying to bind the same value multiple times to different values.
+
+All-in-all, I think Mozart/Oz's approach to concurrency is very interesting and
+unique.  I have not encountered another language that takes the approach it
+does.  I'd love to see Mozart/Oz get is Renaissance.  I would much rather
+program in it than, say, Python, and I wouldn't be surprised if its performance
+was pretty close to Python's.  It just has so much in it that you don't see
+anywhere else.
