@@ -1,0 +1,72 @@
+---
+title: "Concepts, Techniques, and Models of Computer Programming: Chapter 5"
+date: 2025-09-05T00:00:00+01:00
+draft: false
+---
+
+Chapter 5 is about message-passing concurrency.  Message-passing concurrency is
+defined as independent entities send each other messages asynchronously.  It was
+introduced by Carl Hewitt when describing the
+https://en.wikipedia.org/wiki/Actor_model[actor model].
+
+There are three areas that message-passing concurrency is important:
+
+. Complex systems can be represented as multi-agent systems which operate
+independently and communicate via message-passing to achieve a global goal.
+. Distributed systems are naturally represented as independent systems
+communicating via message-passing.  As soon as you have the network, you're
+sending messages and getting responses asynchronously.
+. Highly reliable systems are represented.  Each element can operate
+independently, if one fails the other continue to operate.
+
+As a former professional Erlang programmer, I feel very much at home in message
+passing systems.  While I do prefer OCaml in total, I do miss the concurrency
+model from Erlang and the benefits of OCaml are really making up for the fact
+that it cannot do message-passing.
+
+I think a big benefit of message-passing concurrency is that if you have high
+confidence each agent is well-behaved, even in the face of unexpected messages,
+you have more confidence that when they are combined they are well-behaved.
+This is every similar to why we want to use the declarative programming model as
+much as possible: if we know each declarative component is correct, we have
+higher confidence that when we combine (or compose) them, that the totality is
+correct.
+
+In Mozart/Oz, the channel that messages are sent on is called a "port".  Ports
+are not just built on top of existing primitives in Mozart/Oz but instead extend
+the kernel language with two new primitives: `NewPort` and `Send`.
+
+`{NewPort S P}` binds `S` to the stream of the port and `P` the name of the
+port.  `{Send P Msg}` adds `Msg` to the stream associated with port `P`.
+Multiple threads may send messages on the same port concurrently.  In this way
+we can allow the non-determinism talked about in the last chapter.  If we have a
+client/server architecture, multiple clients can write to the same port and the
+server can handle them in whichever order they arrive.  This allows many-to-one
+communication.  The stream `S` is just a normal list as far as the consumer is
+concerned, like stream objects.  The distinction between ports and stream
+objects from the previous chapter is supporting this many-to-one communication.
+
+The chapter implements various forms of Remote Procedure Calls (RPCs) or Remote
+Method Invocations (RMIs) using message-passing.  Dataflow variables add a layer
+to how to implement these that other languages do not have.  For example, a
+client can request a procedure get executed, pass in an unbound variable, and
+then wait on the variable to be bound to know the procedure is done.  It can
+also choose to bind on it later and go do something else.  This makes it quite
+trivial to implement various flows that are quite complicated in nearly any
+other language.  The books usage of threads and dataflow variables also makes
+message-passing different than Erlang.  In Erlang, where you would require a
+request and response message and then use a ref to match up your request to
+response, Mozart/Oz can use the dataflow variable as the response, bypassing
+that extra level of complexity.  In Erlang, you have to do selective receive to
+ensure you're handling your response, which has its own conceptual and
+operational complexities.
+
+But, again, we land on non-determinism as an important element of concurrent
+programs.  We just can't control when elements the system is interacting with
+will choose to act.  However, ports (and thus, message-passing concurrency)
+turns out to be a good solution to non-determinism.  We can serialize our
+operations inside of an agent in the system, which turns out to simplify a lot
+of things.  Despite the system, as a whole, being concurrent, each agent is
+serialized.  As long as it can handle messages correctly in any order they
+arrive, which is much easier to thin about in a serialized system, we can more
+easily reason about our system, even if it is non-deterministic.
